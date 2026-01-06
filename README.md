@@ -2,6 +2,8 @@
 
 A book introducing the Tactus programming language for AI agents that never lose their place.
 
+**Read online:** https://anthusai.github.io/Learning-Tactus/
+
 ## Building the Book
 
 This book is built with [Quarto](https://quarto.org/). To build:
