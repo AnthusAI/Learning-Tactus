@@ -1,0 +1,9 @@
+# Complete Example: Research Assistant
+
+*This chapter will cover:*
+
+- Building a multi-tool research agent
+- Search, analyze, and summarize workflow
+- Human review of findings
+- Full code walkthrough
+- Testing the research assistant

@@ -1,0 +1,10 @@
+# Procedures and Outputs
+
+*This chapter will cover:*
+
+- The `Procedure` declaration syntax
+- Defining typed inputs with `input = {}`
+- Defining typed outputs with `output = {}`
+- The `field` helper functions (field.string, field.number, field.boolean, etc.)
+- Returning results from procedures
+- Input validation and defaults

@@ -1,0 +1,42 @@
+name: Test Examples
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Tactus
+        run: pip install tactus
+
+      - name: Validate all examples
+        run: |
+          for file in code/**/*.tac; do
+            if [ -f "$file" ]; then
+              echo "Validating $file..."
+              tactus validate "$file"
+            fi
+          done
+
+      - name: Test all examples (BDD specs)
+        run: |
+          for file in code/**/*.tac; do
+            if [ -f "$file" ]; then
+              echo "Testing $file..."
+              tactus test "$file" || true
+            fi
+          done
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

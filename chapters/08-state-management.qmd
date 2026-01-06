@@ -1,0 +1,9 @@
+# State Management
+
+*This chapter will cover:*
+
+- `State.set()`, `State.get()`, `State.increment()`
+- State schemas for type safety
+- When to use state vs. local variables
+- State persistence across checkpoints
+- Debugging state

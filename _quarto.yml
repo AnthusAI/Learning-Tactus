@@ -1,0 +1,62 @@
+project:
+  type: book
+  output-dir: _output
+
+book:
+  title: "Learning Tactus"
+  subtitle: "A Programming Language for AI Agents That Never Lose Their Place"
+  author: "Ryan Porter"
+  date: today
+  chapters:
+    - index.qmd
+    - chapters/00-introduction.qmd
+    - part: "Part I: Why Tactus?"
+      chapters:
+        - chapters/01-what-is-tactus.qmd
+        - chapters/02-transparent-durability.qmd
+        - chapters/03-everything-as-code.qmd
+    - part: "Part II: Getting Started"
+      chapters:
+        - chapters/04-installation.qmd
+        - chapters/05-procedures-and-outputs.qmd
+        - chapters/06-your-first-agent.qmd
+    - part: "Part III: Core Concepts"
+      chapters:
+        - chapters/07-tools.qmd
+        - chapters/08-state-management.qmd
+        - chapters/09-the-agent-loop.qmd
+        - chapters/10-human-in-the-loop.qmd
+    - part: "Part IV: Testing Your Agents"
+      chapters:
+        - chapters/11-behavior-specifications.qmd
+        - chapters/12-built-in-steps.qmd
+        - chapters/13-evaluations.qmd
+    - part: "Part V: Putting It Together"
+      chapters:
+        - chapters/14-example-research-assistant.qmd
+        - chapters/15-example-document-processor.qmd
+        - chapters/16-where-to-go.qmd
+
+format:
+  html:
+    theme: cosmo
+    code-copy: true
+    code-overflow: wrap
+    css: simple-style.css
+  pdf:
+    documentclass: scrbook
+    papersize: letter
+    fontsize: 11pt
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+        \usepackage{tikz}
+        \usepackage{xcolor}
+        \definecolor{magenta}{RGB}{199,0,126}
+        \renewcommand{\maketitle}{}
+    include-before-body:
+      file: title-page.tex
+
+# Code highlighting for Lua/Tactus
+highlight-style: github

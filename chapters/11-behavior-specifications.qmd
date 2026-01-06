@@ -1,0 +1,9 @@
+# Behavior Specifications
+
+*This chapter will cover:*
+
+- The BDD philosophy: specify behavior, not implementation
+- Gherkin syntax: Given/When/Then
+- Embedding specifications in `.tac` files with `Specifications`
+- Running tests with `tactus test`
+- Test output and reporting

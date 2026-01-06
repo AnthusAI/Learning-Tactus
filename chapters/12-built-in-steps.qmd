@@ -1,0 +1,9 @@
+# Built-in Step Definitions
+
+*This chapter will cover:*
+
+- Tool steps: "the search tool should be called"
+- State steps: "the state count should be 5"
+- Completion steps: "the procedure should complete successfully"
+- Output steps: "the output result should exist"
+- Custom step definitions with `step()`

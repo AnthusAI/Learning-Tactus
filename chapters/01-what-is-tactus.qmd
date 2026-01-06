@@ -1,0 +1,137 @@
+# What Is Tactus?
+
+Tactus is a programming language for building AI agents. You define agents, give them tools, and write procedures that orchestrate their work. The runtime handles the hard parts—persistence, checkpointing, human-in-the-loop—so you can focus on what your agents should do.
+
+## What Can You Do With Tactus?
+
+Tactus is designed for workflows where AI agents:
+
+- **Process data intelligently**: Extract information from messy inputs, transform formats, classify content
+- **Interact with users**: Gather information, answer questions, guide multi-step processes
+- **Perform research**: Search, analyze, synthesize findings from multiple sources
+- **Automate tasks**: Handle repetitive work that requires judgment, not just rules
+- **Coordinate with humans**: Request approvals, incorporate feedback, escalate when needed
+
+If your workflow involves an AI making decisions, calling tools, and potentially running for extended periods, Tactus is designed for that.
+
+## What Does Tactus Code Look Like?
+
+Here's a complete Tactus program:
+
+```lua
+tool "done" {
+    description = "Signal task completion with results",
+    parameters = {
+        result = {type = "string", required = true}
+    },
+    function(args)
+        return args.result
+    end
+}
+
+agent "assistant" {
+    provider = "openai",
+    model = "gpt-4o",
+    system_prompt = "You are a helpful assistant. Answer the user's question, then call done with your answer.",
+    toolsets = {"done"}
+}
+
+procedure "main" {
+    input = {
+        question = required("string", "Question to answer")
+    },
+    output = {
+        answer = required("string", "The answer")
+    },
+    function()
+        Agent("assistant").turn({
+            inject = input.question
+        })
+
+        repeat
+            Agent("assistant").turn()
+        until Tool.called("done")
+
+        return { answer = Tool.last_result("done") }
+    end
+}
+```
+
+This program:
+
+1. Defines a **tool** called `done` that the agent uses to signal completion
+2. Defines an **agent** with a model, prompt, and available tools
+3. Defines a **procedure** that takes a question as input, runs the agent until it's done, and returns the answer
+
+Save this as `assistant.tac` and run it:
+
+```bash
+tactus run assistant.tac --input '{"question": "What is the capital of France?"}'
+```
+
+## Why Use Tactus Instead of Python?
+
+You can build AI agents in Python, TypeScript, or any language. Why use Tactus?
+
+**Predictable orchestration.** AI models don't follow instructions perfectly every time. Tell an agent to "always call tool X first" and run it 1000 times—it'll fail at least once. At scale, that matters. Tactus lets you use imperative code for the parts that must be deterministic, and agent turns for the parts that benefit from intelligence.
+
+**Built-in durability.** Every agent turn is automatically checkpointed. If your process crashes, it resumes from where it left off—not from the beginning. No database setup, no serialization code, no checkpoint logic.
+
+**First-class human-in-the-loop.** Need human approval before proceeding? Call `Human.approve()`. The process suspends, waits for the human (hours or days later), and resumes exactly where it paused.
+
+**A new testing paradigm for a new programming paradigm.** Traditional code is deterministic—run it twice, get the same result. You can write unit tests that pass or fail. Agent-based code is non-deterministic. It's not enough to ask "does it produce the right answer?"—you also need to ask "does it *reliably* produce the right answer?" Those are two different questions.
+
+If you're building agents in Python, how exactly are you testing them? Unit tests? ML-style evaluations? If you don't choose deliberately, you're still making a choice—probably not a good one.
+
+Tactus has testing built in for this new reality. BDD specifications define expected behaviors. Evaluations measure reliability—how often your agent succeeds, not just whether it can succeed. It's the same shift that machine learning brought to model development, now applied to agent development.
+
+**Compact and readable.** A complete agent definition fits in 30-50 lines. This matters when AI coding agents need to read and modify your agent definitions.
+
+**Sandboxed execution.** Tactus runs in a restricted Lua environment. Safe for user-contributed code, multi-tenant platforms, or AI-generated agents.
+
+## How Does Tactus Compare to Other Frameworks?
+
+**vs. LangChain/LangGraph**: LangChain provides building blocks; you assemble them in Python. LangGraph adds graph-based workflows. Tactus is a dedicated language with durability built in—less flexible, but less infrastructure to build.
+
+**vs. DSPy**: DSPy optimizes prompts automatically using training data. Tactus doesn't optimize prompts—it provides a language for writing durable agent workflows. They solve different problems.
+
+**vs. CrewAI**: CrewAI models agents as team members with roles. Tactus is more general—agents, tools, procedures—without the team metaphor.
+
+**vs. Raw Python**: Maximum flexibility, but you build everything yourself. Tactus trades some flexibility for built-in durability and human-in-the-loop.
+
+## What Do I Need to Know?
+
+You don't need to know Lua. Tactus uses Lua syntax, but we'll teach you everything you need.
+
+You should be comfortable with basic programming concepts:
+
+- Variables and data types
+- Functions
+- Loops and conditionals
+- Basic data structures (objects, arrays)
+
+If you've written code in Python, JavaScript, or any similar language, you're ready.
+
+## How Is This Book Organized?
+
+**Part I** (Chapters 1-3) explains why Tactus exists—the durability problem, transparent checkpointing, and the everything-as-code design.
+
+**Part II** (Chapters 4-6) gets you started—installation, basic syntax, and your first agent.
+
+**Part III** (Chapters 7-10) covers core concepts—tools, state, the agent loop, and human-in-the-loop.
+
+**Part IV** (Chapters 11-13) covers the new testing paradigm—BDD specifications for behavior, evaluations for reliability.
+
+**Part V** (Chapters 14-16) brings it together with complete examples.
+
+## Your First Exercise
+
+Before moving on, make sure you can run Tactus:
+
+1. Install Tactus (see Chapter 4, or run `pip install tactus`)
+2. Save the assistant example above as `assistant.tac`
+3. Run it: `tactus run assistant.tac --input '{"question": "What is 2+2?"}'`
+
+If you see output with the answer, you're ready to continue.
+
+In the next chapter, we'll explore **transparent durability**—how Tactus automatically checkpoints every operation so your agents never lose their place.

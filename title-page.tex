@@ -1,0 +1,29 @@
+% Custom title page for PDF
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+    % White background
+    \fill[white] (current page.north west) rectangle (current page.south east);
+
+    % Top magenta banner
+    \fill[color=magenta!80!black] ([yshift=-2cm]current page.north west) rectangle ([yshift=-3.5cm]current page.north east);
+
+    % Series text in banner - centered vertically in the banner
+    \node[white,font=\sffamily\small\bfseries] at ([yshift=-2.75cm]current page.north) {THE TACTUS SERIES};
+
+    % Main magenta title block - centered behind the title
+    \fill[color=magenta!80!black] ([yshift=-9.25cm,xshift=-7.5cm]current page.north) rectangle ++(15cm,2.5cm);
+
+    % Title in white on magenta - centered vertically in the rectangle
+    \node[white,font=\sffamily\fontsize{48}{52}\selectfont\bfseries] at ([yshift=-8cm]current page.north) {Learning Tactus};
+
+    % Robot placeholder box (centered) - emoji won't work in LaTeX
+    \draw[gray!40,line width=2pt,dashed] ([yshift=1cm]current page.center) +(-3,-3) rectangle +(3,3);
+    \node[gray!50,font=\Large\sffamily] at ([yshift=1cm]current page.center) {[Robot Image]};
+
+    % Author name - moved up since no subtitle
+    \node[black,font=\Large\sffamily] at ([yshift=-12cm]current page.north) {Ryan Porter};
+
+    % Publisher at bottom
+    \node[black,font=\large\sffamily\itshape] at ([yshift=2cm]current page.south) {Anthus AI Solutions};
+\end{tikzpicture}
+\clearpage

@@ -1,0 +1,10 @@
+# Human-in-the-Loop
+
+*This chapter will cover:*
+
+- When agents need humans
+- `Human.approve()` for approval gates
+- `Human.input()` for free-form input
+- `Human.review()` for artifact review
+- Timeouts and defaults
+- How HITL works with checkpointing

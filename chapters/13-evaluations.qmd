@@ -1,0 +1,10 @@
+# Evaluations
+
+*This chapter will cover:*
+
+- When BDD isn't enough: measuring quality
+- The `evaluations` block
+- Datasets and evaluators
+- LLM judges for quality assessment
+- Success rates and thresholds
+- Running evaluations with `tactus eval`

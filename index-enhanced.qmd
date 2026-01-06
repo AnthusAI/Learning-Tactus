@@ -1,0 +1,92 @@
+::: {.content-visible when-format="html"}
+::: {.book-cover}
+
+# Learning Tactus {.unnumbered}
+
+::: {.subtitle}
+A Programming Language for AI Agents That Never Lose Their Place
+:::
+
+::: {.agent-visual}
+::: {.checkpoint-trail}
+::: {.checkpoint-dot}
+:::
+::: {.checkpoint-dot}
+:::
+::: {.checkpoint-dot}
+:::
+::: {.checkpoint-dot}
+:::
+:::
+::: {.agent-circle}
+🤖
+:::
+:::
+
+::: {.author}
+The Tactus Team
+:::
+
+:::
+:::
+
+# Preface {.unnumbered}
+
+Welcome to *Learning Tactus*.
+
+Tactus is a programming language for AI agents that never lose their place. If you've ever built an AI agent that crashed mid-workflow, timed out waiting for an API, or needed human approval before continuing—and then had to start over from scratch—this book is for you.
+
+## Who This Book Is For
+
+This book is written for AI/ML practitioners who:
+
+- Have built agent workflows with Python scripts, LangChain, or similar tools
+- Are frustrated with the fragility of "happy path" agent code
+- Want a better way to build agents that survive real-world conditions
+- Are curious about a language designed specifically for agentic AI
+
+You don't need to know Lua—we'll teach you everything you need. You should be comfortable with basic programming concepts (variables, loops, functions) in any language.
+
+## What You'll Learn
+
+By the end of this book, you will:
+
+1. **Understand the durability problem** that Tactus solves and why traditional frameworks fall short
+2. **Write your first Tactus procedures** with agents, tools, and state management
+3. **Build robust agent loops** that handle real-world conditions
+4. **Add human-in-the-loop** approval gates and input requests
+5. **Test your agents** with BDD specifications and evaluations
+6. **Build complete examples** that demonstrate production-ready patterns
+
+## How to Use This Book
+
+This book is designed to be read sequentially. Each chapter builds on the previous one.
+
+- **Part I** explains *why* Tactus exists. Read this first—it will change how you think about agent programming.
+- **Part II** gets you up and running with installation, basic syntax, and your first agent.
+- **Part III** covers the core concepts you'll use in every Tactus procedure.
+- **Part IV** shows you how to test and evaluate your agents.
+- **Part V** ties everything together with complete, real-world examples.
+
+Every code example in this book is a runnable `.tac` file. You can find them in the `code/` directory, organized by chapter.
+
+## Conventions Used
+
+Code examples are shown in blocks like this:
+
+```lua
+Agent "greeter" {
+    provider = "openai",
+    system_prompt = "You are a friendly assistant."
+}
+```
+
+When we show terminal commands, they look like this:
+
+```bash
+tactus run hello.tac
+```
+
+## Let's Begin
+
+Turn the page to learn why AI agents need a language of their own.

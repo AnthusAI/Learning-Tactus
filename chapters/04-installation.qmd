@@ -1,0 +1,10 @@
+# Installation and Setup
+
+*This chapter will cover:*
+
+- Installing Tactus via pip
+- Setting up API keys (OpenAI, Bedrock, Google)
+- Configuration with `.tactus/config.yml`
+- Your first "Hello World" procedure
+- Running procedures with `tactus run`
+- The CLI interface overview

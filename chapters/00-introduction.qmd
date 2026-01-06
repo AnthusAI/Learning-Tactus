@@ -1,0 +1,116 @@
+# Introduction: A New Kind of Computer Program {.unnumbered}
+
+For the first time since the dawn of computer programming, there is a fundamentally new kind of computer program.
+
+Since the 1950s, programming has meant one thing: anticipate every scenario and write code to handle it. Parse this format. Catch that error. Map these fields to those fields. If you miss a case, the program breaks.
+
+That's changing.
+
+## The Old Way: Think of Everything
+
+Consider something as simple as importing contact data. A customer sends you a spreadsheet of contacts to add to your system.
+
+The traditional approach requires you to think of everything:
+
+```python
+def import_contacts(file_path):
+    data = read_file(file_path)
+
+    # Map column names to our schema
+    name_column = None
+    for col in data.columns:
+        if col.lower() in ['name', 'full name', 'fullname', 'contact name']:
+            name_column = col
+            break
+
+    # Handle missing columns
+    if not name_column:
+        raise ValueError("Could not find name column")
+
+    # Process each row...
+```
+
+This handles a few variations. But what happens when:
+
+- The columns are named "First Name" and "Last Name" instead of "Name"
+- The file uses "nombre" and "correo" (Spanish)
+- Names are formatted "Last, First" in some rows
+- There's a "Notes" column with additional contact info embedded in it
+
+Each new variation means new code. The import function grows. Edge cases multiply. And still, the next file will have something you didn't anticipate.
+
+## The New Way: Give an Agent a Tool
+
+The agent-based approach inverts the problem.
+
+Instead of writing code to handle every case, you define a capability—a tool—and describe what you want. The agent figures out how to use the tool to achieve the goal.
+
+Here's the same contact import:
+
+```lua
+tool "file_contact" {
+    description = "Save a contact to the database",
+    parameters = {
+        name = {type = "string", required = true},
+        email = {type = "string", required = false}
+    },
+    function(args)
+        save_to_database(args)
+        return "Contact saved: " .. args.name
+    end
+}
+
+agent "importer" {
+    system_prompt = [[Extract contacts from the data
+and call file_contact for each one you find.]]
+}
+```
+
+That's it. No column mapping. No format detection. No endless conditionals.
+
+When the agent sees a spreadsheet with "nombre" and "correo", it understands. When names are "Last, First", it parses them correctly. When there's useful information buried in a notes column, it extracts it.
+
+New format arrives? The agent adapts. No code changes.
+
+This is what we call **"Give an Agent a Tool."** You're not writing code to handle cases—you're providing a capability and describing intent. The intelligence handles the variations.
+
+## A Language for This New Paradigm
+
+If you could just give an agent a set of tools and trust it to do the right thing, you'd be done. That's essentially what happens when you use Claude Code or Cursor with MCP tools—you describe what you want, provide some capabilities, and hope for the best.
+
+It works pretty well, actually. When you're there.
+
+The reason interactive tools work is that you're guiding the agent constantly. You can disapprove when it tries to call the wrong tool. You can abort when something goes sideways. You can redirect when it wanders off course. The human in the loop is doing a lot of implicit correction.
+
+But when you're not there—when you need agents to run autonomously at scale—"hope for the best" falls apart. AI models don't follow instructions perfectly every time. Run the same agent a thousand times and even clear instructions will fail occasionally. At scale, small failure rates compound into real problems.
+
+There's been evolution in this direction. Claude Code skills, for example, bundle tools with instructions for how to use them—a step toward structured guidance. Tactus takes this further: actual imperative programming for combining an agent with a specific set of tools, context, and instructions, then sending it off to do work.
+
+Years of operating mission-critical systems, machine learning models, and agent-based automations taught us you need a middle ground. Not traditional programming where you anticipate every scenario. Not pure agent-based where you hope for the best. Something in between.
+
+The solution is creating narrow, well-defined scenarios where agents apply their intelligence effectively:
+
+- Give agents **only the tools they need** for each specific task
+- Provide **only the context** needed for a specific decision
+- **Break complex tasks** into smaller, focused pieces
+- **Manage the information flow** between task executions
+- **Change instructions** as the workflow progresses
+
+A new programming paradigm also requires a new testing paradigm.
+
+Traditional programming is deterministic—run the same code twice, get the same result. You can write unit tests that pass or fail. Agent-based programming is non-deterministic. The question isn't just "does it produce the right answer?" but "does it *reliably* produce the right answer?" Those are different questions, and they require different testing approaches.
+
+Python comes with unittest. Ruby has its testing frameworks. Tactus has testing built in for an agent-based world—which means not just behavioral specifications (does the code do what it should?) but also evaluations (how often does it succeed?). This combines behavior-driven development from software engineering with evaluation methodology from machine learning.
+
+Tactus is a programming language that makes all of this manageable. The hybrid approach to orchestration. The testing philosophy for non-deterministic systems. All without writing huge amounts of infrastructure code.
+
+The language handles the concerns that this new kind of program requires:
+
+- **Tool Management**: Control exactly which tools an agent can access at any moment
+- **Context Engineering**: Shape what information an agent sees for each decision
+- **Durability**: Agent programs run for hours or days, surviving crashes and restarts
+- **Human-in-the-Loop**: Agents pause for human approval or guidance mid-execution
+- **A New Testing Paradigm**: BDD specifications for behavior, evaluations for reliability
+- **Compact Code**: Definitions small enough for AI coding agents to read and modify
+
+This book will teach you to write this new kind of program.

@@ -1,0 +1,439 @@
+# Everything as Code
+
+We've seen what Tactus is and how transparent durability keeps your agents from losing their place. Now let's explore another fundamental design principle: **everything as code**.
+
+In Tactus, an agent's entire definition—its prompts, tools, orchestration logic, and even its tests—is readable as a coherent whole, not scattered across abstraction layers. This isn't just a convenience; it enables something profound: agents that can understand and improve themselves.
+
+## The Problem with Scattered Definitions
+
+In traditional frameworks, agent logic is scattered:
+
+```python
+# agents/researcher.py
+class ResearcherAgent:
+    def __init__(self, model="gpt-4"):
+        self.model = model
+        self.system_prompt = load_prompt("prompts/researcher.txt")
+        self.tools = [SearchTool(), AnalyzeTool()]
+
+    async def run(self, query):
+        # Complex orchestration logic here
+        pass
+
+# prompts/researcher.txt
+You are a research assistant...
+
+# tools/search.py
+class SearchTool:
+    name = "search"
+    description = "Search the web"
+    # ...
+
+# tests/test_researcher.py
+def test_researcher_calls_search():
+    # Test implementation
+    pass
+
+# config/agents.yaml
+researcher:
+  model: gpt-4
+  temperature: 0.7
+```
+
+To understand this agent, you need to read five different files across four directories. The definition is fragmented.
+
+Now imagine an AI trying to understand this agent—perhaps to improve it or adapt it for a new task. The AI would need to:
+
+1. Parse Python class hierarchies
+2. Follow import statements
+3. Read configuration files
+4. Understand the relationship between components
+5. Synthesize a coherent picture
+
+It's possible, but awkward. The agent's definition isn't legible as a whole.
+
+## The Tactus Approach: Readable, Complete Definitions
+
+Here's the same agent in Tactus:
+
+```lua
+-- researcher.tac
+
+Tool "search" {
+    description = "Search the web for information",
+    input = {
+        query = field.string{required = true}
+    },
+    function(args)
+        -- Search implementation
+        return web_search(args.query)
+    end
+}
+
+Tool "done" {
+    description = "Signal research completion with findings",
+    input = {
+        findings = field.string{required = true}
+    },
+    function(args)
+        return args.findings
+    end
+}
+
+Agent "researcher" {
+    provider = "openai",
+    model = "gpt-4o",
+    system_prompt = [[You are a thorough research assistant.
+
+Your process:
+1. Search for relevant information
+2. Analyze what you find
+3. Synthesize into clear findings
+4. Call done with your findings when complete
+
+Be comprehensive but concise.]],
+    toolsets = {"search", "done"}
+}
+
+Procedure "main" {
+    input = {
+        topic = field.string{required = true}
+    },
+    output = {
+        findings = field.string{required = true}
+    },
+    function(input)
+        Agent("researcher").turn({
+            inject = "Research: " .. input.topic
+        })
+
+        repeat
+            Agent("researcher").turn()
+        until Tool.called("done")
+
+        return {
+            findings = Tool.last_call("done").args.findings
+        }
+    end
+}
+
+Specifications([[
+Feature: Research Agent
+  The researcher should find and synthesize information
+
+  Scenario: Basic research flow
+    Given the procedure has started
+    When the researcher agent takes turns
+    Then the search tool should be called at least once
+    And the done tool should be called exactly once
+    And the procedure should complete successfully
+]])
+```
+
+A complete, readable definition:
+
+- **Tools**: Defined inline with their schemas and handlers
+- **Agent**: Configuration, system prompt, tool access
+- **Orchestration**: The procedure that drives the agent
+- **Tests**: BDD specifications and evaluation definitions
+
+Notice the `Specifications` block at the end. Testing isn't separate from development in Tactus—it's embedded in the same file. This reflects years of experience with TDD and BDD in mission-critical systems: when tests live alongside the code they verify, they stay in sync and actually get maintained.
+
+This matters even more for agent-based code. Since agents are non-deterministic, you need both behavioral specifications (does it do the right thing?) and evaluations (how reliably?). Keeping both in the same file means you're always thinking about reliability, not just correctness.
+
+An AI can read this definition and understand the complete agent.
+
+## Why Readable Definitions Matter
+
+### For Humans: Easier Understanding
+
+When debugging or modifying an agent, you don't chase imports across a codebase. Everything relevant is visible in one place. You can see how the system prompt relates to the available tools, how the orchestration loop works, and what behavior the tests expect.
+
+### For Version Control: Clean Diffs
+
+When an agent changes, the diff shows exactly what changed. Compare:
+
+**Python framework diff:**
+```diff
+--- a/agents/researcher.py
++++ b/agents/researcher.py
+@@ -15,7 +15,7 @@ class ResearcherAgent:
+-        self.max_iterations = 10
++        self.max_iterations = 15
+
+--- a/prompts/researcher.txt
++++ b/prompts/researcher.txt
+@@ -3,6 +3,7 @@
++Be thorough but efficient.
+```
+
+Two files changed. Readers must mentally combine changes to understand the modification.
+
+**Tactus diff:**
+```diff
+--- a/researcher.tac
++++ b/researcher.tac
+@@ -18,7 +18,8 @@ Agent "researcher" {
+     system_prompt = [[You are a thorough research assistant.
++Be thorough but efficient.
+
+@@ -35,7 +36,7 @@ Procedure "main" {
+-        local max_turns = 10
++        local max_turns = 15
+```
+
+The relationship between changes is visible—they're part of the same definition.
+
+### For AI: Self-Evolution Potential
+
+This is the profound implication. When an agent's definition is:
+
+1. Readable as a coherent whole
+2. In a minimal, clear syntax
+3. Compact enough to fit in a context window
+
+...then an AI can read, understand, and modify it.
+
+## The Self-Evolution Vision
+
+Imagine an agent that can:
+
+1. Read its own `.tac` file
+2. Analyze its performance (via logs, evaluations, user feedback)
+3. Identify improvements to make
+4. Rewrite its own definition
+5. Test the new version
+6. Deploy if tests pass
+
+This isn't science fiction. The architecture makes it possible:
+
+```lua
+-- meta-agent.tac
+-- An agent that improves other agents
+
+Agent "optimizer" {
+    provider = "openai",
+    model = "gpt-4o",
+    system_prompt = [[You are an agent optimizer.
+
+Given a Tactus procedure definition and its evaluation results,
+suggest improvements to the system prompt, tool usage, or
+orchestration logic.
+
+Output your suggestions as a modified .tac file.]],
+    toolsets = {"read_file", "write_file", "run_eval", "done"}
+}
+
+Procedure "main" {
+    input = {
+        target_file = field.string{required = true},
+        eval_results = field.string{required = true}
+    },
+    output = {
+        improved_file = field.string{required = true}
+    },
+    function(input)
+        -- Read the current agent definition
+        local current = Tool.call("read_file", {path = input.target_file})
+
+        -- Give optimizer the definition and eval results
+        Agent("optimizer").turn({
+            inject = "Current definition:\n" .. current ..
+                    "\n\nEvaluation results:\n" .. input.eval_results ..
+                    "\n\nSuggest improvements."
+        })
+
+        repeat
+            Agent("optimizer").turn()
+        until Tool.called("done")
+
+        return {
+            improved_file = Tool.last_call("done").args.result
+        }
+    end
+}
+```
+
+The optimizer agent reads a procedure definition as text, reasons about improvements, and outputs a modified definition. Because Tactus procedures are just text files in a readable format, this workflow is natural.
+
+## Token Efficiency: Fitting in Context Windows
+
+Tactus is deliberately minimal. Compare token counts for equivalent functionality:
+
+**Python framework** (across multiple files):
+```
+Typical agent: 800-1500 tokens
+```
+
+**Tactus** (complete definition):
+```
+Typical agent: 300-600 tokens
+```
+
+This efficiency matters when you want an AI to:
+
+- Read multiple agent definitions for comparison
+- Include agent definitions in prompts
+- Generate or modify agent code
+
+More agents fit in the context window. Modifications produce smaller diffs. The syntax overhead is minimal.
+
+## Safe Embedding: Why Lua Matters
+
+You might wonder: why Lua instead of Python?
+
+Python cannot be safely sandboxed. A Python agent can:
+- Access the file system
+- Make network requests
+- Import arbitrary modules
+- Execute shell commands
+
+Lua was designed for embedding. Tactus runs agents in a restricted Lua VM where:
+
+- File system access is disabled by default
+- Network access is disabled by default
+- Only explicitly provided tools grant capabilities
+
+This makes Tactus safe for:
+
+- **Multi-tenant platforms**: User A's agent can't affect User B
+- **User-contributed agents**: Run untrusted code safely
+- **AI-generated code**: Let agents write and execute orchestration logic
+
+The tools you provide are the *only* capabilities the agent has. Everything else is sandboxed away.
+
+## A Complete, Self-Contained Example
+
+Let's put it together with a complete agent that demonstrates everything-as-code:
+
+```lua
+-- code/chapter-03/contact-processor.tac
+-- A complete agent for processing contact data
+
+-- Tools give the agent capabilities
+Tool "file_contact" {
+    description = "Save a processed contact to the database",
+    input = {
+        name = field.string{required = true},
+        email = field.string{required = true},
+        company = field.string{required = false}
+    },
+    function(args)
+        -- In a real system, this would save to a database
+        Log.info("Filed contact", args)
+        return "Contact filed: " .. args.name
+    end
+}
+
+Tool "done" {
+    description = "Signal that all contacts have been processed",
+    input = {
+        count = field.number{required = true, description = "Number of contacts processed"}
+    },
+    function(args)
+        return "Processed " .. args.count .. " contacts"
+    end
+}
+
+-- Agent configuration
+Agent "processor" {
+    provider = "openai",
+    model = "gpt-4o-mini",
+    system_prompt = [[You are a contact data processor.
+
+Given raw contact data in any format (CSV lines, JSON, plain text),
+extract each contact and call file_contact for each one.
+
+When all contacts are processed, call done with the count.
+
+Handle messy data gracefully:
+- Infer fields when possible
+- Skip entries with insufficient data
+- Be forgiving of formatting variations]],
+    toolsets = {"file_contact", "done"}
+}
+
+-- Orchestration logic
+Procedure "main" {
+    input = {
+        data = field.string{required = true, description = "Raw contact data to process"}
+    },
+    output = {
+        processed_count = field.number{required = true},
+        status = field.string{required = true}
+    },
+    function(input)
+        -- Give agent the data
+        Agent("processor").turn({
+            inject = "Process these contacts:\n\n" .. input.data
+        })
+
+        -- Let it work until done
+        local max_turns = 20
+        local turn_count = 0
+
+        repeat
+            Agent("processor").turn()
+            turn_count = turn_count + 1
+        until Tool.called("done") or turn_count >= max_turns
+
+        -- Collect results
+        if Tool.called("done") then
+            local count = Tool.last_call("done").args.count
+            return {
+                processed_count = count,
+                status = "Completed successfully"
+            }
+        else
+            return {
+                processed_count = 0,
+                status = "Max turns reached without completion"
+            }
+        end
+    end
+}
+
+-- Behavior specifications
+Specifications([[
+Feature: Contact Processing
+
+  Scenario: Processes multiple contacts
+    Given the procedure has started
+    When the processor agent takes turns
+    Then the file_contact tool should be called at least once
+    And the done tool should be called exactly once
+    And the procedure should complete successfully
+
+  Scenario: Handles completion
+    Given the procedure has started
+    When the processor agent takes turns
+    Then the output processed_count should be greater than 0
+    And the output status should be "Completed successfully"
+]])
+```
+
+This definition contains:
+
+1. Two tool definitions with typed schemas
+2. An agent with its complete system prompt
+3. Orchestration logic with safety limits
+4. Input/output contracts
+5. BDD specifications for testing
+
+A human can understand it. An AI can read and modify it. It runs in a sandbox. And it's durable—if the process crashes mid-processing, it resumes.
+
+## Summary: The Everything-as-Code Advantage
+
+Tactus makes agent definitions readable and complete:
+
+| Benefit | Why It Matters |
+|---------|----------------|
+| **Comprehension** | Understand agents without chasing abstraction layers |
+| **Clean diffs** | Version control shows meaningful changes |
+| **Token efficiency** | More agents fit in LLM context windows |
+| **Self-evolution** | AIs can read, modify, and improve agents |
+| **Safe execution** | Sandboxed Lua prevents escape |
+
+Combined with transparent durability from the previous chapter, you now have the foundation for building robust, evolvable AI agents.
+
+In Part II, we'll get hands-on: installing Tactus, writing your first procedures, and building real agents. The concepts are established; now it's time to code.

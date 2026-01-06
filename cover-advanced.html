@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Learning Tactus - Cover Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            overflow: hidden;
+        }
+
+        .book-cover {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            padding: 2em;
+        }
+
+        h1 {
+            font-size: 4em;
+            font-weight: 700;
+            margin-bottom: 0.2em;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.4em;
+            font-weight: 300;
+            opacity: 0.95;
+            margin-bottom: 3em;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
+        }
+
+        /* The Agent Path Visualization */
+        .agent-journey {
+            width: 600px;
+            height: 200px;
+            margin: 3em auto;
+            position: relative;
+        }
+
+        /* The path line */
+        .path {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-50%);
+        }
+
+        /* Checkpoints */
+        .checkpoint {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .checkpoint.c1 { left: 10%; }
+        .checkpoint.c2 { left: 30%; }
+        .checkpoint.c3 { left: 50%; }
+        .checkpoint.c4 { left: 70%; }
+        .checkpoint.c5 { left: 90%; }
+
+        /* The agent */
+        .agent {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 10%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+            animation: journey 8s infinite;
+            z-index: 5;
+        }
+
+        @keyframes journey {
+            0% { left: 10%; }
+            20% { left: 30%; }
+            25% { left: 30%; transform: translate(-50%, -50%) scale(0.9); }
+            30% { left: 30%; transform: translate(-50%, -50%) scale(1); }
+            40% { left: 50%; }
+            45% { left: 50%; transform: translate(-50%, -50%) scale(0.9); }
+            50% { left: 50%; transform: translate(-50%, -50%) scale(1); }
+            60% { left: 70%; }
+            /* Simulate crash at 70% */
+            65% { left: 70%; opacity: 1; }
+            66% { left: 70%; opacity: 0.3; transform: translate(-50%, -50%) rotate(180deg); }
+            70% { left: 70%; opacity: 0.3; }
+            /* Resume from checkpoint */
+            75% { left: 70%; opacity: 1; transform: translate(-50%, -50%) rotate(0deg); }
+            90% { left: 90%; }
+            100% { left: 90%; }
+        }
+
+        /* Crash indicator */
+        .crash-indicator {
+            position: absolute;
+            top: 50%;
+            left: 70%;
+            transform: translate(-50%, -150%);
+            animation: crash 8s infinite;
+            opacity: 0;
+            font-size: 14px;
+            background: rgba(255,0,0,0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        @keyframes crash {
+            0%, 65% { opacity: 0; }
+            66% { opacity: 1; }
+            70% { opacity: 1; }
+            71% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        /* Resume indicator */
+        .resume-indicator {
+            position: absolute;
+            top: 50%;
+            left: 70%;
+            transform: translate(-50%, 100%);
+            animation: resume 8s infinite;
+            opacity: 0;
+            font-size: 14px;
+            background: rgba(0,255,0,0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        @keyframes resume {
+            0%, 74% { opacity: 0; }
+            75% { opacity: 1; }
+            80% { opacity: 1; }
+            81% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        .author {
+            margin-top: 3em;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        /* Background pattern */
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+            background-image:
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);
+        }
+
+        /* Floating code snippets in background */
+        .code-float {
+            position: absolute;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            opacity: 0.15;
+            white-space: pre;
+            animation: float 20s infinite linear;
+        }
+
+        .code-float.c1 {
+            top: 10%;
+            left: -300px;
+            animation-delay: 0s;
+        }
+
+        .code-float.c2 {
+            top: 40%;
+            left: -300px;
+            animation-delay: 5s;
+        }
+
+        .code-float.c3 {
+            top: 70%;
+            left: -300px;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            from { transform: translateX(0); }
+            to { transform: translateX(calc(100vw + 600px)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="code-float c1">repeat
+    Agent("researcher").turn()
+until Tool.called("done")</div>
+
+    <div class="code-float c2">local approved = Human.approve({
+    message = "Deploy?"
+})</div>
+
+    <div class="code-float c3">-- Runtime checkpoints every operation
+-- Never lose your place</div>
+
+    <div class="book-cover">
+        <h1>Learning Tactus</h1>
+        <div class="subtitle">
+            A Programming Language for AI Agents<br>
+            That Never Lose Their Place
+        </div>
+
+        <div class="agent-journey">
+            <div class="path"></div>
+            <div class="checkpoint c1">✓</div>
+            <div class="checkpoint c2">✓</div>
+            <div class="checkpoint c3">✓</div>
+            <div class="checkpoint c4">✓</div>
+            <div class="checkpoint c5">✓</div>
+            <div class="agent">🤖</div>
+            <div class="crash-indicator">💥 Crash!</div>
+            <div class="resume-indicator">✨ Resume</div>
+        </div>
+
+        <div class="author">The Tactus Team</div>
+    </div>
+</body>
+</html>

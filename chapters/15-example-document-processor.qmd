@@ -1,0 +1,9 @@
+# Complete Example: Document Processor
+
+*This chapter will cover:*
+
+- Processing files with File I/O
+- Iterating over data
+- Structured output
+- Error handling patterns
+- Testing document processing
