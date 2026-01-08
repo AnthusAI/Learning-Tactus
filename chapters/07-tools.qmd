@@ -3,8 +3,8 @@
 *This chapter will cover:*
 
 - Why tools matter: giving agents capabilities
-- Inline tool definitions with `Tool`
+- Inline tool definitions (`search = Tool { ... }`)
 - The parameters/input schema
 - Writing tool handler functions
 - Tool return values
-- Tool tracking: `Tool.called()`, `Tool.last_call()`, `Tool.last_result()`
+- Tool tracking: `done.called()`, `done.last_call()`, `done.last_result()`

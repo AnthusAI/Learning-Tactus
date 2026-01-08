@@ -75,7 +75,7 @@ Every code example in this book is a runnable `.tac` file. You can find them in 
 Code examples are shown in blocks like this:
 
 ```lua
-Agent "greeter" {
+greeter = Agent {
     provider = "openai",
     system_prompt = "You are a friendly assistant."
 }

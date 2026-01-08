@@ -7,4 +7,5 @@
 - Configuration with `.tactus/config.yml`
 - Your first "Hello World" procedure
 - Running procedures with `tactus run`
+- Running specs early with `tactus test --mock`
 - The CLI interface overview

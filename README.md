@@ -1,6 +1,7 @@
 # Learning Tactus
 
 A book introducing the Tactus programming language for AI agents that never lose their place.
+Tactus builds on DSPy for LLM programming primitives (signatures, modules, optimizers) and adds a higher-level DSL with durability, sandboxing, and human-in-the-loop.
 
 **Read online:** https://anthusai.github.io/Learning-Tactus/
 
@@ -36,7 +37,7 @@ quarto render
 
 - **Part II: Getting Started** - Installation and basics
 - **Part III: Core Concepts** - Tools, state, agent loops, HITL
-- **Part IV: Testing Your Agents** - BDD specifications and evaluations
+- **Part IV: Testing Your Agents** - BDD specifications and evaluations (used throughout the book)
 - **Part V: Putting It Together** - Complete examples
 
 ## Code Examples
@@ -45,6 +46,8 @@ All code examples are in the `code/` directory, organized by chapter. Each examp
 - Is a runnable `.tac` file
 - Includes embedded BDD specifications for testing
 - Can be tested with `tactus test code/**/*.tac`
+
+To keep examples correct and CI-backed, `code/` is copied directly from the main Tactus repo’s `examples/` directory (`../Tactus/examples`). Prefer updating the upstream example in the Tactus repo, then re-copying it into this book.
 
 ## Testing
 

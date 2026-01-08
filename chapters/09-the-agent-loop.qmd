@@ -2,7 +2,7 @@
 
 *This chapter will cover:*
 
-- The canonical pattern: `repeat ... until Tool.called("done")`
+- The canonical pattern: `repeat ... until done.called()`
 - Multi-turn conversations
 - Iteration limits for safety
 - Logging with `Log.info()`, `Log.warn()`

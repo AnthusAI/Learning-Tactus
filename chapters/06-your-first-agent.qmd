@@ -2,9 +2,12 @@
 
 *This chapter will cover:*
 
-- The `Agent` declaration syntax
+- The `Agent` declaration syntax (`worker = Agent { ... }`)
 - Providers and models
 - Writing effective system prompts
-- The agent turn loop: `Agent("name").turn()`
+- Callable agent invocation: `worker()` and `worker({message = "..."})`
 - The "done" tool pattern
 - Getting results from agent interactions
+- Writing a spec first (`Specifications`) and iterating in mock mode
+
+*Example procedure:* `code/chapter-01/04-basics-simple-agent.tac`

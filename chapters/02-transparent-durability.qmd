@@ -11,14 +11,18 @@ Tactus solves this with *transparent durability*. You write normal imperative co
 When you write:
 
 ```lua
-repeat
-    Agent("researcher").turn()
-until Tool.called("done")
+        local max_turns = 10
+        local turn_count = 0
+
+        while not done.called() and turn_count < max_turns do
+            turn_count = turn_count + 1
+            greeter()
+        end
 ```
 
-Each `Agent.turn()` creates a checkpoint. The checkpoint includes:
+Each agent call (for example, `greeter()`) creates a checkpoint. The checkpoint includes:
 
-- The complete conversation history
+- The complete conversation history (stored in a DSPy-compatible `History` format)
 - All tool call results
 - The current procedure state
 - Where in the code execution should resume
@@ -27,55 +31,28 @@ If the process crashes after turn 5, the runtime doesn't re-execute turns 1-4. I
 
 ## Seeing It in Action
 
-Let's trace through a simple example:
+The key insight: **replay is fast and free**. Checkpointed operations don't re-execute—they restore their previous results. Only operations after the last checkpoint actually run.
+
+You can see this clearly even in a pure deterministic loop (excerpted from `code/chapter-02/10-feature-state.tac`):
 
 ```lua
-Procedure "main" {
-    output = {
-        result = field.string{required = true}
-    },
-    function()
-        Log.info("Starting work")                    -- Step 1
+    Log.info("Starting state management example")
 
-        State.set("progress", 0)                     -- Step 2
+    -- Initialize state
+    State.set("items_processed", 0)
 
-        for i = 1, 3 do
-            Agent("worker").turn()                   -- Steps 3, 4, 5
-            State.increment("progress")
-        end
-
-        return {result = "Done"}                     -- Step 6
+    -- Process items and track count
+    for i = 1, 5 do
+      State.increment("items_processed")
+      Log.info("Processing item", {number = i})
     end
-}
+
+    -- Retrieve final state
+    local final_count = State.get("items_processed")
+    Log.info("Completed processing", {total = final_count})
 ```
 
-**First run (completes normally):**
-
-1. `Log.info` → checkpointed
-2. `State.set` → checkpointed
-3. `Agent.turn` #1 → checkpointed
-4. `Agent.turn` #2 → checkpointed
-5. `Agent.turn` #3 → checkpointed
-6. Return → checkpointed, procedure complete
-
-**Second run (crashes after step 4):**
-
-1. `Log.info` → **replayed** (no API call, just restore checkpoint)
-2. `State.set` → **replayed**
-3. `Agent.turn` #1 → **replayed**
-4. `Agent.turn` #2 → **replayed**
-5. 💥 Process crashes
-
-**Third run (resumes from crash):**
-
-1. `Log.info` → replayed
-2. `State.set` → replayed
-3. `Agent.turn` #1 → replayed
-4. `Agent.turn` #2 → replayed
-5. `Agent.turn` #3 → **executed** (resumes here)
-6. Return → checkpointed, procedure complete
-
-The key insight: **replay is fast and free**. Checkpointed operations don't re-execute—they restore their previous results. Only operations after the last checkpoint actually run.
+If the process restarts mid-loop, the runtime replays the completed work up to the last checkpoint and resumes from the next operation—without repeating the already-completed steps.
 
 ## What Gets Checkpointed?
 
@@ -83,7 +60,7 @@ Tactus automatically checkpoints these operations:
 
 | Operation | What's Saved |
 |-----------|--------------|
-| `Agent.turn()` | Conversation history, response, tool calls |
+| `greeter()` | Conversation history, response, tool calls |
 | `Human.approve()` | The approval request and human's response |
 | `Human.input()` | The input request and human's response |
 | `Procedure.run()` | Sub-procedure inputs, outputs, and state |
@@ -93,29 +70,7 @@ State changes (`State.set`, `State.increment`) and log entries are also tracked,
 
 ## Human-in-the-Loop: Where Durability Shines
 
-The most powerful application of transparent durability is human-in-the-loop workflows. Consider:
-
-```lua
--- Agent does research
-repeat
-    Agent("researcher").turn()
-until Tool.called("findings_ready")
-
--- Human reviews (might take hours or days)
-local approved = Human.approve({
-    message = "Review these findings before publishing",
-    context = {
-        summary = Tool.last_result("findings_ready")
-    }
-})
-
--- Agent continues based on human decision
-if approved then
-    Agent("publisher").turn({
-        inject = "Publish the approved findings"
-    })
-end
-```
+The most powerful application of transparent durability is human-in-the-loop workflows. A procedure can run, do some work, and then suspend at `Human.approve()` (or `Human.input()`) until a person responds—minutes, hours, or days later.
 
 When `Human.approve()` is called:
 
@@ -130,99 +85,73 @@ When `Human.approve()` is called:
 
 The process doesn't need to stay running. The checkpoint persists. When the human finally responds, a new process can pick up exactly where the old one left off.
 
-## Example: A Deployment Agent
+## Example: Durable State
 
-Here's a realistic example that combines agent work with human oversight:
+This runnable example (copied directly from the main Tactus repo) is simple on purpose: it demonstrates that state updates, logs, and control flow are part of durable execution.
 
 ```lua
--- code/chapter-02/deployment-agent.tac
+-- State Management Example
+-- Demonstrates setting, getting, and incrementing state values
 
-Tool "done" {
-    description = "Signal that deployment preparation is complete",
-    input = {
-        changes = field.string{required = true, description = "Summary of changes"}
-    },
-    function(args)
-        return args.changes
-    end
-}
-
-Agent "deployer" {
+-- Agents (defined at top level - reusable across procedures)
+worker = Agent {
     provider = "openai",
-    model = "gpt-4o",
-    system_prompt = [[You are a deployment assistant. Your job is to:
-1. Review the changes to be deployed
-2. Identify any risks or concerns
-3. Prepare a deployment summary
-4. Call the done tool with your summary when ready]],
-    toolsets = {"done"}
+    system_prompt = "A simple worker agent",
+    initial_message = "Starting state management example",
+    tools = {},
 }
 
-Procedure "main" {
-    input = {
-        version = field.string{required = true, description = "Version to deploy"},
-        environment = field.string{default = "staging", description = "Target environment"}
-    },
+-- Procedure with outputs defined inline
+Procedure {
     output = {
-        deployed = field.boolean{required = true},
-        summary = field.string{required = true}
+        success = field.boolean{required = true, description = "Whether the workflow completed successfully"},
+        message = field.string{required = true, description = "Status message"},
+        count = field.number{required = true, description = "Final count of processed items"},
     },
     function(input)
-        Log.info("Preparing deployment", {
-            version = input.version,
-            environment = input.environment
-        })
+    Log.info("Starting state management example")
 
-        -- Agent prepares deployment (survives crashes)
-        repeat
-            Agent("deployer").turn()
-        until Tool.called("done")
+    -- Initialize state
+    State.set("items_processed", 0)
 
-        local changes = Tool.last_call("done").args.changes
-
-        -- Human approval gate (can take hours)
-        local approved = Human.approve({
-            message = "Deploy " .. input.version .. " to " .. input.environment .. "?",
-            context = {
-                changes = changes,
-                environment = input.environment
-            }
-        })
-
-        if approved then
-            Log.info("Deployment approved, proceeding")
-            -- In a real system, this would trigger actual deployment
-            return {
-                deployed = true,
-                summary = "Deployed " .. input.version .. ": " .. changes
-            }
-        else
-            Log.info("Deployment rejected")
-            return {
-                deployed = false,
-                summary = "Deployment cancelled by reviewer"
-            }
-        end
+    -- Process items and track count
+    for i = 1, 5 do
+      State.increment("items_processed")
+      Log.info("Processing item", {number = i})
     end
+
+    -- Retrieve final state
+    local final_count = State.get("items_processed")
+    Log.info("Completed processing", {total = final_count})
+
+    return {
+      success = true,
+      message = "State management example completed successfully",
+      count = final_count
+    }
+end
 }
 
+-- BDD Specifications
 Specifications([[
-Feature: Deployment with Approval
+Feature: State Management
+  Demonstrate state operations in Tactus workflows
 
-  Scenario: Deployment is prepared and awaits approval
+  Scenario: State operations work correctly
     Given the procedure has started
-    When the deployer agent takes turns
-    Then the done tool should be called exactly once
+    When the procedure runs
+    Then the procedure should complete successfully
+    And the state items_processed should be 5
+    And the output success should be True
+    And the output count should be 5
 ]])
 ```
 
-This procedure:
+Run it in mock mode (no API key needed):
 
-1. Uses an agent to prepare deployment (checkpointed)
-2. Asks a human to approve (suspends execution)
-3. Completes or cancels based on human response
-
-If the process crashes during agent preparation, it resumes. If it crashes while waiting for human approval, the approval request persists. The workflow is robust to any failure mode.
+```bash
+tactus test code/chapter-02/10-feature-state.tac --mock
+```
 
 ## The "Never Lose Their Place" Guarantee
 

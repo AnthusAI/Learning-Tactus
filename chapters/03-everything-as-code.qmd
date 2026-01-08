@@ -54,80 +54,156 @@ It's possible, but awkward. The agent's definition isn't legible as a whole.
 
 ## The Tactus Approach: Readable, Complete Definitions
 
-Here's the same agent in Tactus:
+Here's a complete, single-file Tactus program (copied directly from the main Tactus repo):
 
 ```lua
--- researcher.tac
+--[[
+Example: Individual Lua Function Tools
 
-Tool "search" {
-    description = "Search the web for information",
-    input = {
-        query = field.string{required = true}
-    },
-    function(args)
-        -- Search implementation
-        return web_search(args.query)
-    end
+Demonstrates defining tools using the tool() function.
+Each tool() declaration creates a single-tool toolset that can be
+referenced by name in agent configurations.
+
+To run this example:
+tactus run examples/18-feature-lua-tools-individual.tac --param task="Calculate 15% tip on a $50 bill"
+]]--
+
+-- Mock configuration for testing (only active in mock mode)
+Mocks {
+    calculator = {
+        returns = {
+            response = "I'll calculate the 20% tip on $50. The tip is $10.00 and the total is $60.00.",
+            tool_calls = {"calculate_tip", "done"}
+        }
+    }
 }
 
-Tool "done" {
-    description = "Signal research completion with findings",
-    input = {
-        findings = field.string{required = true}
-    },
+-- Define completion tool
+done = tactus.done
+
+-- Define individual tools using the Tool function
+calculate_tip = Tool {
+    description = "Calculate tip amount for a bill",
+        input = {
+            bill_amount = field.number{required = true, description = "Total bill amount in dollars"},
+            tip_percentage = field.number{required = true, description = "Tip percentage (e.g., 15 for 15%)"},
+        },
     function(args)
-        return args.findings
-    end
+    local tip = args.bill_amount * (args.tip_percentage / 100)
+    local total = args.bill_amount + tip
+    return string.format("Bill: $%.2f, Tip (%.0f%%): $%.2f, Total: $%.2f",
+        args.bill_amount, args.tip_percentage, tip, total)
+end
 }
 
-Agent "researcher" {
+split_bill = Tool {
+    description = "Split a bill total among multiple people",
+        input = {
+            total_amount = field.number{required = true, description = "Total amount to split"},
+            num_people = field.integer{required = true, description = "Number of people to split among"},
+        },
+    function(args)
+    local per_person = args.total_amount / args.num_people
+    return string.format("Split $%.2f among %d people = $%.2f per person",
+        args.total_amount, args.num_people, per_person)
+end
+}
+
+calculate_discount = Tool {
+    description = "Calculate price after discount",
+        input = {
+            original_price = field.number{required = true, description = "Original price"},
+            discount_percent = field.number{required = true, description = "Discount percentage"},
+        },
+    function(args)
+    local discount_amount = args.original_price * (args.discount_percent / 100)
+    local final_price = args.original_price - discount_amount
+    return string.format("Original: $%.2f, Discount (%.0f%%): $%.2f, Final: $%.2f",
+        args.original_price, args.discount_percent, discount_amount, final_price)
+end
+}
+
+-- Agent with access to individual Lua tools
+calculator = Agent {
     provider = "openai",
-    model = "gpt-4o",
-    system_prompt = [[You are a thorough research assistant.
+    model = "gpt-4o-mini",
+    tool_choice = "required",
+    system_prompt = [[You are a helpful calculator assistant.
 
-Your process:
-1. Search for relevant information
-2. Analyze what you find
-3. Synthesize into clear findings
-4. Call done with your findings when complete
+IMPORTANT: You MUST call the appropriate tool for EVERY calculation. Never calculate directly.
 
-Be comprehensive but concise.]],
-    toolsets = {"search", "done"}
+After calling the calculation tool, call done with the result.]],
+    initial_message = "{input.task}",
+    tools = {calculate_tip, split_bill, calculate_discount, done}
 }
 
-Procedure "main" {
+-- Main workflow
+Procedure {
     input = {
-        topic = field.string{required = true}
+        task = field.string{description = "Calculation task to perform", default = "Calculate 20% tip on $50"}
     },
     output = {
-        findings = field.string{required = true}
+        result = field.string{required = true, description = "The calculation result"},
+        completed = field.boolean{required = true, description = "Whether the task was completed successfully"}
     },
     function(input)
-        Agent("researcher").turn({
-            inject = "Research: " .. input.topic
-        })
+    local max_turns = 5
+    local turn_count = 0
+    local result
 
-        repeat
-            Agent("researcher").turn()
-        until Tool.called("done")
+    repeat
+        result = calculator()
+        turn_count = turn_count + 1
 
-        return {
-            findings = Tool.last_call("done").args.findings
-        }
+        -- Log tool usage
+        if Tool.called("calculate_tip") then
+            Log.info("Used tip calculator")
+        end
+        if Tool.called("split_bill") then
+            Log.info("Used bill splitter")
+        end
+        if Tool.called("calculate_discount") then
+            Log.info("Used discount calculator")
+        end
+
+    until done.called() or turn_count >= max_turns
+
+    -- Get final result
+    local answer
+    if done.called() then
+        answer = done.last_result() or "Task completed"
+    else
+        answer = result.text
     end
+
+    return {
+        result = answer,
+        completed = done.called()
+    }
+end
 }
 
+-- BDD Specifications
 Specifications([[
-Feature: Research Agent
-  The researcher should find and synthesize information
+Feature: Individual Lua Function Tools
+  Demonstrate tool() function for defining individual tools
 
-  Scenario: Basic research flow
+  Scenario: Calculator calculates 20% tip on $50
     Given the procedure has started
-    When the researcher agent takes turns
-    Then the search tool should be called at least once
-    And the done tool should be called exactly once
-    And the procedure should complete successfully
+    When the procedure runs
+    Then the procedure should complete successfully
+    And the output completed should be True
+    And the calculate_tip tool should be called
+    And the calculate_tip tool should be called with bill_amount=50
+    And the calculate_tip tool should be called with tip_percentage=20
+    And the output result should be similar to "$10.00"
 ]])
+```
+
+Run the copy in this book repo:
+
+```bash
+tactus run code/chapter-03/18-feature-lua-tools-individual.tac --param task="Calculate 15% tip on a $50 bill"
 ```
 
 A complete, readable definition:
@@ -135,7 +211,7 @@ A complete, readable definition:
 - **Tools**: Defined inline with their schemas and handlers
 - **Agent**: Configuration, system prompt, tool access
 - **Orchestration**: The procedure that drives the agent
-- **Tests**: BDD specifications and evaluation definitions
+- **Tests**: BDD specifications embedded alongside code
 
 Notice the `Specifications` block at the end. Testing isn't separate from development in Tactus—it's embedded in the same file. This reflects years of experience with TDD and BDD in mission-critical systems: when tests live alongside the code they verify, they stay in sync and actually get maintained.
 
@@ -169,20 +245,7 @@ When an agent changes, the diff shows exactly what changed. Compare:
 
 Two files changed. Readers must mentally combine changes to understand the modification.
 
-**Tactus diff:**
-```diff
---- a/researcher.tac
-+++ b/researcher.tac
-@@ -18,7 +18,8 @@ Agent "researcher" {
-     system_prompt = [[You are a thorough research assistant.
-+Be thorough but efficient.
-
-@@ -35,7 +36,7 @@ Procedure "main" {
--        local max_turns = 10
-+        local max_turns = 15
-```
-
-The relationship between changes is visible—they're part of the same definition.
+With Tactus, the prompt, tool definitions, orchestration loop, and specifications live together. A single-file diff usually contains the full story of a behavioral change.
 
 ### For AI: Self-Evolution Potential
 
@@ -205,56 +268,7 @@ Imagine an agent that can:
 5. Test the new version
 6. Deploy if tests pass
 
-This isn't science fiction. The architecture makes it possible:
-
-```lua
--- meta-agent.tac
--- An agent that improves other agents
-
-Agent "optimizer" {
-    provider = "openai",
-    model = "gpt-4o",
-    system_prompt = [[You are an agent optimizer.
-
-Given a Tactus procedure definition and its evaluation results,
-suggest improvements to the system prompt, tool usage, or
-orchestration logic.
-
-Output your suggestions as a modified .tac file.]],
-    toolsets = {"read_file", "write_file", "run_eval", "done"}
-}
-
-Procedure "main" {
-    input = {
-        target_file = field.string{required = true},
-        eval_results = field.string{required = true}
-    },
-    output = {
-        improved_file = field.string{required = true}
-    },
-    function(input)
-        -- Read the current agent definition
-        local current = Tool.call("read_file", {path = input.target_file})
-
-        -- Give optimizer the definition and eval results
-        Agent("optimizer").turn({
-            inject = "Current definition:\n" .. current ..
-                    "\n\nEvaluation results:\n" .. input.eval_results ..
-                    "\n\nSuggest improvements."
-        })
-
-        repeat
-            Agent("optimizer").turn()
-        until Tool.called("done")
-
-        return {
-            improved_file = Tool.last_call("done").args.result
-        }
-    end
-}
-```
-
-The optimizer agent reads a procedure definition as text, reasons about improvements, and outputs a modified definition. Because Tactus procedures are just text files in a readable format, this workflow is natural.
+This isn't science fiction. The architecture makes it possible: a Tactus procedure is a compact, readable artifact that another agent can load, reason about, rewrite, and then test. We'll return to this idea later in the book after we've covered tools, state, and testing.
 
 ## Token Efficiency: Fitting in Context Windows
 
@@ -277,6 +291,8 @@ This efficiency matters when you want an AI to:
 - Generate or modify agent code
 
 More agents fit in the context window. Modifications produce smaller diffs. The syntax overhead is minimal.
+
+There's another advantage: Tactus is intentionally aligned with DSPy's design (signatures, modules, history). Because many coding assistants have already seen DSPy patterns during pre-training, they can often transfer that knowledge when reading or generating Tactus—while you still get a higher-level, durable DSL.
 
 ## Safe Embedding: Why Lua Matters
 
@@ -304,117 +320,11 @@ The tools you provide are the *only* capabilities the agent has. Everything else
 
 ## A Complete, Self-Contained Example
 
-Let's put it together with a complete agent that demonstrates everything-as-code:
-
-```lua
--- code/chapter-03/contact-processor.tac
--- A complete agent for processing contact data
-
--- Tools give the agent capabilities
-Tool "file_contact" {
-    description = "Save a processed contact to the database",
-    input = {
-        name = field.string{required = true},
-        email = field.string{required = true},
-        company = field.string{required = false}
-    },
-    function(args)
-        -- In a real system, this would save to a database
-        Log.info("Filed contact", args)
-        return "Contact filed: " .. args.name
-    end
-}
-
-Tool "done" {
-    description = "Signal that all contacts have been processed",
-    input = {
-        count = field.number{required = true, description = "Number of contacts processed"}
-    },
-    function(args)
-        return "Processed " .. args.count .. " contacts"
-    end
-}
-
--- Agent configuration
-Agent "processor" {
-    provider = "openai",
-    model = "gpt-4o-mini",
-    system_prompt = [[You are a contact data processor.
-
-Given raw contact data in any format (CSV lines, JSON, plain text),
-extract each contact and call file_contact for each one.
-
-When all contacts are processed, call done with the count.
-
-Handle messy data gracefully:
-- Infer fields when possible
-- Skip entries with insufficient data
-- Be forgiving of formatting variations]],
-    toolsets = {"file_contact", "done"}
-}
-
--- Orchestration logic
-Procedure "main" {
-    input = {
-        data = field.string{required = true, description = "Raw contact data to process"}
-    },
-    output = {
-        processed_count = field.number{required = true},
-        status = field.string{required = true}
-    },
-    function(input)
-        -- Give agent the data
-        Agent("processor").turn({
-            inject = "Process these contacts:\n\n" .. input.data
-        })
-
-        -- Let it work until done
-        local max_turns = 20
-        local turn_count = 0
-
-        repeat
-            Agent("processor").turn()
-            turn_count = turn_count + 1
-        until Tool.called("done") or turn_count >= max_turns
-
-        -- Collect results
-        if Tool.called("done") then
-            local count = Tool.last_call("done").args.count
-            return {
-                processed_count = count,
-                status = "Completed successfully"
-            }
-        else
-            return {
-                processed_count = 0,
-                status = "Max turns reached without completion"
-            }
-        end
-    end
-}
-
--- Behavior specifications
-Specifications([[
-Feature: Contact Processing
-
-  Scenario: Processes multiple contacts
-    Given the procedure has started
-    When the processor agent takes turns
-    Then the file_contact tool should be called at least once
-    And the done tool should be called exactly once
-    And the procedure should complete successfully
-
-  Scenario: Handles completion
-    Given the procedure has started
-    When the processor agent takes turns
-    Then the output processed_count should be greater than 0
-    And the output status should be "Completed successfully"
-]])
-```
+The runnable example shown above lives at `code/chapter-03/18-feature-lua-tools-individual.tac`.
 
 This definition contains:
 
-1. Two tool definitions with typed schemas
+1. Tool definitions with typed schemas
 2. An agent with its complete system prompt
 3. Orchestration logic with safety limits
 4. Input/output contracts

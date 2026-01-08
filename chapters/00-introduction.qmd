@@ -45,32 +45,38 @@ The agent-based approach inverts the problem.
 
 Instead of writing code to handle every case, you define a capability—a tool—and describe what you want. The agent figures out how to use the tool to achieve the goal.
 
-Here's the same contact import:
+Here's the same idea in Tactus (adapted from `code/chapter-01/04-basics-simple-agent.tac`):
 
 ```lua
-tool "file_contact" {
-    description = "Save a contact to the database",
-    parameters = {
-        name = {type = "string", required = true},
-        email = {type = "string", required = false}
-    },
-    function(args)
-        save_to_database(args)
-        return "Contact saved: " .. args.name
-    end
+done = tactus.done
+
+greeter = Agent {
+    provider = "openai",
+    model = "gpt-4o-mini",
+    system_prompt = "Greet the user. When you're done, call the done tool with reason set to your greeting.",
+    initial_message = "Please greet the user with a friendly message",
+    tools = {done},
 }
 
-agent "importer" {
-    system_prompt = [[Extract contacts from the data
-and call file_contact for each one you find.]]
+Procedure {
+    output = {
+        greeting = field.string{required = true},
+    },
+    function(input)
+        repeat
+            greeter()
+        until done.called()
+
+        return {
+            greeting = done.last_call().args.reason
+        }
+    end
 }
 ```
 
-That's it. No column mapping. No format detection. No endless conditionals.
+That's it. You defined a capability (`done`), gave it to the agent, and wrote a tiny loop that runs until the agent signals completion.
 
-When the agent sees a spreadsheet with "nombre" and "correo", it understands. When names are "Last, First", it parses them correctly. When there's useful information buried in a notes column, it extracts it.
-
-New format arrives? The agent adapts. No code changes.
+For contact import, the pattern is the same: you expose a `file_contact` tool (with a typed schema) and tell an agent to call it for each contact it finds. When the columns are `nombre` and `correo`, the agent maps them. When names are `Last, First`, it parses them. New formats arrive? The agent adapts—without you adding a new pile of conditionals.
 
 This is what we call **"Give an Agent a Tool."** You're not writing code to handle cases—you're providing a capability and describing intent. The intelligence handles the variations.
 
@@ -114,3 +120,18 @@ The language handles the concerns that this new kind of program requires:
 - **Compact Code**: Definitions small enough for AI coding agents to read and modify
 
 This book will teach you to write this new kind of program.
+
+## The Tactus Workflow: Spec First
+
+In this book, testing isn't a later chapter—it's how you write Tactus from the beginning.
+
+When you start a new `.tac` procedure:
+
+1. Write a `Specifications([[ ... ]])` block that describes the behavior you want in plain language.
+2. Add `Mocks { ... }` for any external tools (and, later, DSPy modules) so you can iterate quickly and deterministically.
+3. Run `tactus test yourfile.tac --mock` until the workflow logic is correct.
+4. Switch to real mode (`tactus test yourfile.tac`) and then run multiple times (`tactus test yourfile.tac --runs 10`) to measure reliability.
+
+A practical trick is to run once in real mode, then copy the tool/module outputs you observed into your `Mocks` block so future runs are fast and deterministic. Tactus already records every call for durability, so turning a “real run” into a reusable mock fixture is a natural workflow—even if you do it manually at first.
+
+For a deterministic spec-first example you can run entirely in mock mode, see `code/chapter-05/02-basics-simple-logic.tac`. For the `Mocks { ... }` syntax itself, see `code/chapter-05/70-mocking-static.tac`.

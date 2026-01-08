@@ -86,14 +86,21 @@ Parts II-V have placeholder chapters outlining the content to be written.
 
 ### 4. Code Examples
 
-Runnable `.tac` files with embedded BDD specifications:
+Runnable `.tac` files with embedded BDD specifications.
+
+These are copied directly from the main Tactus repo’s `examples/` directory (`../Tactus/examples`) so they stay CI-backed and correct. Prefer updating the upstream example first, then re-copying it into this book.
 
 ```
 code/
+├── chapter-01/
+│   └── 04-basics-simple-agent.tac
 ├── chapter-02/
-│   └── deployment-agent.tac    # Durable deployment with HITL
-└── chapter-03/
-    └── contact-processor.tac   # Complete agent example
+│   └── 10-feature-state.tac
+├── chapter-03/
+│   └── 18-feature-lua-tools-individual.tac
+└── chapter-05/
+    ├── 02-basics-simple-logic.tac
+    └── 70-mocking-static.tac
 ```
 
 ### 5. CI/CD Setup

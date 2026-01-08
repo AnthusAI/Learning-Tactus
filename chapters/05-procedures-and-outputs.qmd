@@ -2,9 +2,14 @@
 
 *This chapter will cover:*
 
-- The `Procedure` declaration syntax
+- The `Procedure { ... }` declaration syntax
 - Defining typed inputs with `input = {}`
 - Defining typed outputs with `output = {}`
 - The `field` helper functions (field.string, field.number, field.boolean, etc.)
 - Returning results from procedures
 - Input validation and defaults
+- Embedding `Specifications` and running `tactus test`
+- Using `Mocks {}` for deterministic tests (`tactus test --mock`)
+- Measuring reliability early (`tactus test --runs N`)
+
+*Example procedures:* `code/chapter-05/02-basics-simple-logic.tac`, `code/chapter-05/70-mocking-static.tac`
