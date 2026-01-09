@@ -1,6 +1,6 @@
 # Learning Tactus
 
-A book introducing the Tactus programming language for AI agents that never lose their place.
+A book introducing Tactus: durable orchestration for tool-using AI agents.
 Tactus builds on DSPy for LLM programming primitives (signatures, modules, optimizers) and adds a higher-level DSL with durability, sandboxing, and human-in-the-loop.
 
 **Read online:** https://anthusai.github.io/Learning-Tactus/
@@ -15,6 +15,7 @@ quarto render --to html
 ```
 
 The HTML output will be in `_output/index.html` with clean, simple web styling.
+Note: `_output/index.html` is overwritten post-render with `cover.html` (see `_quarto.yml` `project.post-render`), and the book’s preface now lives in `chapters/00-preface.qmd`. The cover expects a square animal image at `images/cover-animal.png` (or `cover-animal.png`).
 
 ### PDF Version
 ```bash

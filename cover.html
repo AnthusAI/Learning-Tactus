@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Learning Tactus</title>
+    <style>
+      :root {
+        --ink: #111111;
+        --paper: #ffffff;
+        --page: #f1f1f1;
+        --magenta: #c7007e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", Times, serif;
+        background: var(--page);
+        color: var(--ink);
+      }
+
+      .stage {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.25rem;
+        padding: 2.25rem 1.25rem;
+      }
+
+      .cover {
+        width: min(860px, 94vw, 60vh);
+        aspect-ratio: 2 / 3;
+        background: var(--paper);
+        border: 4px solid var(--ink);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        gap: clamp(12px, 2.2vmin, 22px);
+        --cover-pad: clamp(18px, 4.6vmin, 56px);
+        padding: var(--cover-pad);
+        container-type: size;
+        text-align: center;
+      }
+
+      .series-band {
+        background: var(--magenta);
+        color: #ffffff;
+        margin: calc(-1 * var(--cover-pad)) calc(-1 * var(--cover-pad)) 0 calc(-1 * var(--cover-pad));
+        padding: 1.05rem var(--cover-pad);
+        text-align: center;
+      }
+
+      .series {
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .title-area {
+        display: grid;
+        gap: clamp(0.55rem, 1.6vmin, 0.85rem);
+        justify-items: center;
+      }
+
+      .title-block {
+        display: inline-block;
+        background: var(--magenta);
+        padding: clamp(0.85rem, 2.4vmin, 1.1rem) clamp(0.95rem, 2.8vmin, 1.25rem) clamp(0.8rem, 2.2vmin, 1rem);
+      }
+
+      h1 {
+        margin: 0;
+        color: #ffffff;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+        line-height: 0.95;
+        font-size: clamp(2.05rem, 7vmin, 4.3rem);
+      }
+
+      .title-line {
+        display: block;
+      }
+
+      .subtitle {
+        margin: 0;
+        width: 100%;
+        max-width: 44rem;
+        font-size: clamp(0.95rem, 2.5vmin, 1.25rem);
+        font-weight: 600;
+        line-height: 1.25;
+      }
+
+      .art-area {
+        display: grid;
+        place-items: center;
+        min-height: 0;
+        padding: 0.5rem 0;
+      }
+
+      .art-frame {
+        width: min(94cqw, 74cqh, 760px);
+        max-width: 100%;
+        aspect-ratio: 1 / 1;
+        display: grid;
+        place-items: center;
+        position: relative;
+      }
+
+      .art-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        filter: none;
+      }
+
+      .art-placeholder {
+        display: none;
+        width: 100%;
+        height: 100%;
+        border: 2px dashed rgba(17, 17, 17, 0.25);
+        color: rgba(17, 17, 17, 0.75);
+        font-weight: 650;
+        font-size: 0.95rem;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem;
+      }
+
+      .author {
+        font-size: 1.05rem;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+      }
+
+      .start-reading {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.25rem;
+        border-radius: 999px;
+        border: 2px solid var(--ink);
+        background: var(--magenta);
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 750;
+        letter-spacing: 0.01em;
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.14);
+        transition: transform 140ms ease, filter 140ms ease;
+      }
+
+      .start-reading:hover {
+        filter: brightness(0.96);
+        transform: translateY(-1px);
+      }
+
+      .start-reading:active {
+        transform: translateY(0);
+      }
+
+      .start-reading:focus-visible {
+        outline: 3px solid rgba(199, 0, 126, 0.35);
+        outline-offset: 4px;
+      }
+
+      @media (max-width: 520px) {
+        .series {
+          font-size: 0.82rem;
+        }
+      }
+
+      @supports not (width: 1cqw) {
+        .art-frame {
+          width: min(94%, 760px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="cover">
+        <div class="series-band">
+          <div class="series">The Tactus Series</div>
+        </div>
+
+        <div class="title-area">
+          <div class="title-block">
+            <h1>
+              <span class="title-line">Learning</span>
+              <span class="title-line">Tactus</span>
+            </h1>
+          </div>
+          <p class="subtitle">Durable Orchestration for Tool-Using AI Agents</p>
+        </div>
+
+        <div class="art-area">
+          <div class="art-frame">
+            <img
+              src="images/cover-animal.png"
+              alt="Animal illustration"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+            <div class="art-placeholder">Add <code>images/cover-animal.png</code> (or <code>cover-animal.png</code>)</div>
+          </div>
+        </div>
+
+        <div class="author">Ryan Porter</div>
+      </div>
+
+      <a class="start-reading" href="chapters/00-preface.html">Start reading</a>
+    </div>
+  </body>
+</html>

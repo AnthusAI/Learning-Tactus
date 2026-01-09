@@ -1,11 +1,79 @@
 # Installation and Setup
 
-*This chapter will cover:*
+Tactus is just a Python package with a CLI. Install it with `pip`, then start writing `.tac` files.
 
-- Installing Tactus via pip
-- Setting up API keys (OpenAI, Bedrock, Google)
-- Configuration with `.tactus/config.yml`
-- Your first "Hello World" procedure
-- Running procedures with `tactus run`
-- Running specs early with `tactus test --mock`
-- The CLI interface overview
+## What You'll Do
+
+- Install Tactus and verify the `tactus` CLI works
+- Run a first procedure with `tactus run`
+- Run a first spec with `tactus test --mock` (fast, no API key required)
+- Learn how this repo organizes runnable examples under `code/`
+- Set up provider credentials for “real runs” when you’re ready (optional for most chapters)
+
+## Prerequisites
+
+- **Python 3.11+** (Tactus requires `>=3.11`)
+- A working `pip` (we’ll use `python -m pip ...` to avoid PATH surprises)
+
+## Install
+
+If you’re using a virtual environment, activate it first.
+
+```bash
+python -m pip install -U pip
+python -m pip install tactus
+```
+
+Verify the CLI is on your PATH:
+
+```bash
+tactus --help
+```
+
+## Your First `.tac` File
+
+Tactus procedures live in `.tac` files (Lua syntax). This repo already includes runnable examples under `code/`.
+
+### Fast sanity check (no API key)
+
+Run a spec in **mock mode**. This skips real LLM calls and uses `Mocks { ... }` blocks for deterministic, free tests:
+
+```bash
+tactus test code/chapter-01/04-basics-simple-agent.tac --mock
+```
+
+If that passes, you’re ready for most of the book.
+
+### Real run (requires an API key)
+
+To actually run an agent against a model provider:
+
+```bash
+export OPENAI_API_KEY="your-key"
+tactus run code/chapter-01/01-basics-hello-world.tac
+```
+
+## How This Book Organizes Examples
+
+- Runnable procedures live under `code/chapter-XX/`.
+- Chapters will point you at specific `.tac` files you can run with `tactus run ...` or validate with `tactus test ...`.
+
+## Provider Credentials (Optional)
+
+Tactus reads credentials from a config file. This is the easiest way to “install once, use anywhere”.
+
+### User-wide config (recommended)
+
+Create `~/.tactus/config.yml`:
+
+```yaml
+openai_api_key: "your-key"
+```
+
+### Project config (override for one repo)
+
+Create `.tactus/config.yml` in a project directory to override your user-wide settings.
+
+## A Note on Safety (Stub Tools)
+
+Later chapters introduce tools that *look* like they do real work (for example, “send an email”). In this book repo, those are implemented as safe stubs by default (they log/return an id, but they don’t actually send anything). We’ll use that to teach tool use and approval gates without side effects.

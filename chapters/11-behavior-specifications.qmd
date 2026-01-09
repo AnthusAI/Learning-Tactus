@@ -1,9 +1,18 @@
 # Behavior Specifications
 
-*This chapter will cover:*
+Tactus procedures mix deterministic code (Lua) and non-deterministic steps (agents). Behavior specifications are how you keep that mix from turning into guesswork.
 
-- The BDD philosophy: specify behavior, not implementation
-- Gherkin syntax: Given/When/Then
-- Embedding specifications in `.tac` files with `Specifications`
-- Running tests with `tactus test`
-- Test output and reporting
+## This Chapter Will Cover
+
+- BDD philosophy: specify *behavior*, not implementation
+- Gherkin syntax: `Feature` / `Scenario` / `Given` / `When` / `Then`
+- Embedding specs directly in `.tac` files with `Specifications([[ ... ]])`
+- Running specs with `tactus test` and understanding the output
+- Writing specs for tool-using workflows (assert “dangerous tools weren’t called”)
+
+## How It Connects to the Running Example
+
+We’ll write a spec for the recap workflow that locks in the safety invariant:
+
+- The workflow must request human approval
+- The email tool must not be called unless approval is granted

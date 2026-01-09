@@ -19,5 +19,8 @@ __pycache__/
 *.pyc
 .env
 
+# Tactus local config (often contains secrets)
+.tactus/config.yml
+
 /.quarto/
 **/*.quarto_ipynb

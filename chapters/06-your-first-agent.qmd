@@ -1,13 +1,21 @@
 # Your First Agent
 
-*This chapter will cover:*
+This chapter is your hands-on starting point: define an agent, send it a message, and get a reliable, typed result back.
 
-- The `Agent` declaration syntax (`worker = Agent { ... }`)
-- Providers and models
-- Writing effective system prompts
-- Callable agent invocation: `worker()` and `worker({message = "..."})`
-- The "done" tool pattern
-- Getting results from agent interactions
-- Writing a spec first (`Specifications`) and iterating in mock mode
+## This Chapter Will Cover
 
-*Example procedure:* `code/chapter-01/04-basics-simple-agent.tac`
+- The `Agent { ... }` declaration syntax and the “callable agent” model
+- Providers and models (enough to get running; not an exhaustive survey)
+- Writing system prompts that support deterministic orchestration
+- Single-turn calls vs multi-turn conversations (we’ll keep it single-turn for now)
+- Extracting useful results from the agent response
+
+## The Running Example Starts Here
+
+We’ll begin a simple workflow we can grow through Part II:
+
+1. Take a messy `raw_notes` string (meeting notes, a chat transcript, or a pasted doc excerpt)
+2. Have an agent produce a draft recap email (subject + body + action items)
+3. Later, add tools + human approval before any “send” step
+
+*Warm-up example:* `code/chapter-01/04-basics-simple-agent.tac`

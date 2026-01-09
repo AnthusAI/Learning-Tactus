@@ -4,26 +4,25 @@
     % White background
     \fill[white] (current page.north west) rectangle (current page.south east);
 
-    % Top magenta banner
-    \fill[color=magenta!80!black] ([yshift=-2cm]current page.north west) rectangle ([yshift=-3.5cm]current page.north east);
+    % Top magenta banner (flush to top edge)
+    \fill[color=magenta!80!black] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
 
     % Series text in banner - centered vertically in the banner
-    \node[white,font=\sffamily\small\bfseries] at ([yshift=-2.75cm]current page.north) {THE TACTUS SERIES};
+    \node[white,font=\rmfamily\small\bfseries] at ([yshift=-0.75cm]current page.north) {THE TACTUS SERIES};
 
     % Main magenta title block - centered behind the title
-    \fill[color=magenta!80!black] ([yshift=-9.25cm,xshift=-7.5cm]current page.north) rectangle ++(15cm,2.5cm);
+    \node[fill=magenta!80!black,minimum width=15.5cm,minimum height=3.1cm,anchor=center] (titleblock) at ([yshift=-6.2cm]current page.north) {};
 
     % Title in white on magenta - centered vertically in the rectangle
-    \node[white,font=\sffamily\fontsize{48}{52}\selectfont\bfseries] at ([yshift=-8cm]current page.north) {Learning Tactus};
+    \node[white,font=\rmfamily\fontsize{56}{60}\selectfont\bfseries] at (titleblock.center) {Learning Tactus};
 
-    % Robot placeholder box (centered) - emoji won't work in LaTeX
-    \draw[gray!40,line width=2pt,dashed] ([yshift=1cm]current page.center) +(-3,-3) rectangle +(3,3);
-    \node[gray!50,font=\Large\sffamily] at ([yshift=1cm]current page.center) {[Robot Image]};
+    % Subtitle
+    \node[black,font=\rmfamily\LARGE\bfseries,text width=12.5cm,align=center] (subtitle) at ([yshift=-0.9cm]titleblock.south) {Durable Orchestration for Tool-Using AI Agents};
 
-    % Author name - moved up since no subtitle
-    \node[black,font=\Large\sffamily] at ([yshift=-12cm]current page.north) {Ryan Porter};
+    % Cover art (centered, no border)
+    \node[anchor=north] at ([yshift=-0.8cm]subtitle.south) {\includegraphics[width=15cm,height=15cm,keepaspectratio]{images/cover-animal.png}};
 
-    % Publisher at bottom
-    \node[black,font=\large\sffamily\itshape] at ([yshift=2cm]current page.south) {Anthus AI Solutions};
+    % Author
+    \node[black,font=\Large\rmfamily] at ([yshift=2.0cm]current page.south) {Ryan Porter};
 \end{tikzpicture}
 \clearpage

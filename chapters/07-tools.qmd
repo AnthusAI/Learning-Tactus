@@ -1,10 +1,16 @@
 # Tools
 
-*This chapter will cover:*
+Tools are how your agent affects the world: write files, call APIs, query databases, and integrate with other systems. This chapter introduces tools in a way that stays safe and reproducible.
 
-- Why tools matter: giving agents capabilities
-- Inline tool definitions (`search = Tool { ... }`)
-- The parameters/input schema
-- Writing tool handler functions
-- Tool return values
-- Tool tracking: `done.called()`, `done.last_call()`, `done.last_result()`
+## This Chapter Will Cover
+
+- Why “tools” are the right abstraction (capabilities, not callbacks)
+- Defining a tool inline: `name = Tool { description = "...", input = { ... }, function(args) ... end }`
+- Designing tool schemas that are hard to misuse (types + clear field descriptions)
+- Tool return values and how agents should interpret them
+- Tool tracking and inspection (`Tool.called(...)`, `tool.called()`, `tool.last_call()`, `tool.last_result()`)
+- A practical safety pattern: **give the agent only the tools it should be allowed to use right now**
+
+## How It Connects to the Running Example
+
+We’ll add a “send email” tool, implemented as a harmless stub (it logs what it would send and returns a fake `message_id`). That lets us teach tool calling without actually emailing anyone.

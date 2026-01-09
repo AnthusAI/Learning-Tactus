@@ -1,10 +1,12 @@
 # Transparent Durability
 
-In the last chapter, we saw what Tactus code looks like and ran our first program. We mentioned that Tactus automatically checkpoints every operation. Now let's explore what that means.
+In the last chapter, we introduced human-in-the-loop as a first-class primitive—approvals and reviews that can pause a workflow. That only works if your procedure can stop for minutes or days and then resume correctly.
+
+That’s what *transparent durability* is for. You write normal imperative code, and the runtime checkpoints every agent turn, tool call, and human interaction so your workflow never loses its place.
 
 Real-world agents can't always run to completion. They wait for human approval. They survive crashes. They run for days. State must persist across interruptions.
 
-Tactus solves this with *transparent durability*. You write normal imperative code, and the runtime handles persistence automatically. This chapter explains how it works.
+This chapter explains how it works.
 
 ## The Core Idea: Every Operation Is Checkpointed
 
@@ -153,9 +155,9 @@ Run it in mock mode (no API key needed):
 tactus test code/chapter-02/10-feature-state.tac --mock
 ```
 
-## The "Never Lose Their Place" Guarantee
+## The Durability Guarantee
 
-Tactus's tagline is "AI agents that never lose their place." Now you understand what that means:
+You’ll sometimes hear Tactus summarized as “AI agents that never lose their place.” Here’s what that means in practice:
 
 - **Crashes**: Execution resumes from the last checkpoint
 - **Timeouts**: Partial work is preserved, completion continues later

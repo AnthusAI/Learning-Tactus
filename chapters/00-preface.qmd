@@ -1,35 +1,3 @@
-::: {.content-visible when-format="html"}
-::: {.book-cover}
-
-# Learning Tactus {.unnumbered}
-
-::: {.subtitle}
-Durable Orchestration for Tool-Using AI Agents
-:::
-
-::: {.agent-visual}
-::: {.checkpoint-trail}
-::: {.checkpoint-dot}
-:::
-::: {.checkpoint-dot}
-:::
-::: {.checkpoint-dot}
-:::
-::: {.checkpoint-dot}
-:::
-:::
-::: {.agent-circle}
-🤖
-:::
-:::
-
-::: {.author}
-The Tactus Team
-:::
-
-:::
-:::
-
 # Preface {.unnumbered}
 
 Welcome to *Learning Tactus*.
@@ -45,6 +13,8 @@ If you rely on the model to always call the right tool at the right time with th
 This book is for people who want to keep the magic, but make it safe to run unattended.
 
 We’ll do that with programmatic guardrails: explicit tool access, approval gates before risky actions, durable execution when workflows pause, and tests/evaluations that measure reliability.
+
+Under the hood, Tactus builds on DSPy: typed signatures, modules, and optimizers for working with LLMs. Tactus adds a higher-level DSL with durable execution, sandboxing, and human-in-the-loop primitives on top. You don't need to know DSPy to get started—we'll begin with Tactus's simplest, highest-level constructs, and only go deeper when you're ready.
 
 ## Who This Book Is For
 
@@ -65,7 +35,7 @@ By the end of this book, you will:
 2. **Write your first Tactus procedures** with agents, tools, and state management
 3. **Build robust agent loops** that handle real-world conditions
 4. **Add human-in-the-loop** approval gates and input requests
-5. **Test your agents** with BDD specifications and evaluations
+5. **Write specs and evaluations from day one**—BDD for behavior, evaluations for reliability
 6. **Build complete examples** that demonstrate production-ready patterns
 
 ## How to Use This Book
@@ -85,9 +55,16 @@ Every code example in this book is a runnable `.tac` file. You can find them in 
 Code examples are shown in blocks like this:
 
 ```lua
+-- Simple Agent Example
+
+done = tactus.done
+
 greeter = Agent {
     provider = "openai",
-    system_prompt = "You are a friendly assistant."
+    model = "gpt-4o-mini",
+    system_prompt = "You are a friendly assistant. When asked to greet someone, provide a warm, friendly greeting. When you're done, call the done tool with reason set to your greeting message. Do not use emojis.",
+    initial_message = "Please greet the user with a friendly message",
+    tools = {done},
 }
 ```
 

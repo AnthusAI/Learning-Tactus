@@ -1,9 +1,19 @@
 # Built-in Step Definitions
 
-*This chapter will cover:*
+Tactus ships with a set of step definitions that make specs practical: you can assert tool calls, outputs, and state without writing custom glue code.
 
-- Tool steps: "the search tool should be called"
-- State steps: "the state count should be 5"
-- Completion steps: "the procedure should complete successfully"
-- Output steps: "the output result should exist"
-- Custom step definitions with `step()`
+## This Chapter Will Cover
+
+- Tool steps (called/uncalled, args matching, call counts)
+- Output steps (existence, equality, patterns, “similar to”)
+- State steps (specific values, counters, stage transitions)
+- HITL steps:
+  - mocking `Human.approve` / `Human.input` responses
+  - asserting that a workflow asked for approval/review
+- When to extend with custom steps (`step(...)`) and when not to
+
+## How It Connects to the Running Example
+
+We’ll tighten the recap spec using built-in steps so it reads like a policy:
+
+“When the procedure runs, it must ask for approval, and it must not send email unless approved.”

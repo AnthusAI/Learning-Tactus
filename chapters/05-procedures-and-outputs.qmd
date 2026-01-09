@@ -1,15 +1,19 @@
 # Procedures and Outputs
 
-*This chapter will cover:*
+This is the “language basics” chapter: how Tactus procedures take inputs, return typed outputs, and fail fast when inputs don’t match what you expect.
 
-- The `Procedure { ... }` declaration syntax
-- Defining typed inputs with `input = {}`
-- Defining typed outputs with `output = {}`
-- The `field` helper functions (field.string, field.number, field.boolean, etc.)
-- Returning results from procedures
-- Input validation and defaults
-- Embedding `Specifications` and running `tactus test`
-- Using `Mocks {}` for deterministic tests (`tactus test --mock`)
-- Measuring reliability early (`tactus test --runs N`)
+## This Chapter Will Cover
 
-*Example procedures:* `code/chapter-05/02-basics-simple-logic.tac`, `code/chapter-05/70-mocking-static.tac`
+- The two common styles you’ll see in this book:
+  - Script-style procedures with top-level `input { ... }` / `output { ... }`
+  - `Procedure { ... }` blocks (when you want explicit procedure configuration)
+- Defining inputs: required fields, defaults, and descriptions (`field.string`, `field.number`, `field.boolean`, etc.)
+- Defining outputs: structured results, validation, and “return tables”
+- Parameters vs inputs (`--param key=value` vs `input { ... }`)
+- Practical error handling patterns (use `assert(...)` / `error(...)` to fail loudly)
+
+## How It Connects to the Running Example
+
+We’ll revisit the meeting-recap workflow from Part II and give it a clean, typed contract (inputs like “raw notes” and “recipient”, outputs like “draft subject/body”, and later “message_id”).
+
+*Related examples:* `code/chapter-05/02-basics-simple-logic.tac`, `code/chapter-05/70-mocking-static.tac`

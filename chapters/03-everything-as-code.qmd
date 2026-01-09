@@ -346,4 +346,4 @@ Tactus makes agent definitions readable and complete:
 
 Combined with transparent durability from the previous chapter, you now have the foundation for building robust, evolvable AI agents.
 
-In Part II, we'll get hands-on: installing Tactus, writing your first procedures, and building real agents. The concepts are established; now it's time to code.
+Next, we’ll start locking these workflows down with **behavior specifications**—so your tool-using, human-gated procedures stay correct as they evolve.

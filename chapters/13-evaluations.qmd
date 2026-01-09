@@ -1,10 +1,19 @@
 # Evaluations
 
-*This chapter will cover:*
+BDD specs answer “can the workflow do the right thing?” Evaluations answer the harder question: “how often does it do the right thing?”
 
-- When BDD isn't enough: measuring quality
-- The `evaluations` block
-- Datasets and evaluators
-- LLM judges for quality assessment
-- Success rates and thresholds
-- Running evaluations with `tactus eval`
+## This Chapter Will Cover
+
+- When specs are enough (workflow correctness) vs when you need evals (quality + reliability)
+- The evaluation workflow: dataset → runs → metrics → thresholds
+- Basic metrics you can trust (success rate, constraint violations)
+- Using model-graded metrics carefully (and how to keep them honest)
+- Running evaluations and interpreting results over time
+
+## How It Connects to the Running Example
+
+We’ll build a small dataset of messy notes inputs and measure:
+
+- Does the agent reliably extract action items?
+- Are recap emails concise and readable?
+- Does the workflow consistently enforce the approval gate?

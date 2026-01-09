@@ -1,9 +1,15 @@
 # State Management
 
-*This chapter will cover:*
+State is how durable workflows stay correct across retries, restarts, and human delays. This chapter focuses on *practical* state: idempotency, progress tracking, and “don’t do the dangerous thing twice.”
 
-- `State.set()`, `State.get()`, `State.increment()`
-- State schemas for type safety
-- When to use state vs. local variables
-- State persistence across checkpoints
-- Debugging state
+## This Chapter Will Cover
+
+- Core operations: `State.get`, `State.set`, `State.increment`
+- State vs local variables (when durability matters)
+- Idempotency patterns for side effects (email sends, writes, API calls)
+- Modeling workflow stages in state (so your procedure is self-describing when resumed)
+- Debugging and inspecting state during development
+
+## How It Connects to the Running Example
+
+We’ll add a simple guard so the recap workflow can be retried safely without “double sending” the same email. This is where Tactus starts to feel like a language designed for production, not demos.

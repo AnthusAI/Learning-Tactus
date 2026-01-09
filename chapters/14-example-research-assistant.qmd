@@ -1,9 +1,11 @@
 # Complete Example: Research Assistant
 
-*This chapter will cover:*
+This chapter is a full walkthrough of a multi-tool research workflow: from query to structured findings to human review.
 
-- Building a multi-tool research agent
-- Search, analyze, and summarize workflow
-- Human review of findings
-- Full code walkthrough
-- Testing the research assistant
+## This Chapter Will Cover
+
+- Tool design for research (search, fetch, extract, summarize)
+- Orchestration patterns for multi-step work (plan → execute → synthesize)
+- Human review before publishing or acting on results
+- Durability + resumability (long-running research without losing progress)
+- Specs and evals that keep research quality from drifting

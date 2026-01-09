@@ -10,34 +10,75 @@ That's changing.
 
 Consider something as simple as importing contact data. A customer sends you a spreadsheet of contacts to add to your system.
 
-The traditional approach requires you to think of everything:
+The traditional approach requires you to think of everything.
 
-```python
-def import_contacts(file_path):
-    data = read_file(file_path)
+Even if you restrict yourself to *one* contact record and *one* format (CSV), you still end up handling lots of variants. For example, all of these are “the same contact”, but with different headers and name formatting:
 
-    # Map column names to our schema
-    name_column = None
-    for col in data.columns:
-        if col.lower() in ['name', 'full name', 'fullname', 'contact name']:
-            name_column = col
-            break
-
-    # Handle missing columns
-    if not name_column:
-        raise ValueError("Could not find name column")
-
-    # Process each row...
+```text
+First Name,Last Name,E-mail,Notes
+FIRST,LAST,contact@example.com,VIP
 ```
 
-This handles a few variations. But what happens when:
+```text
+name,email,Notes
+"LAST, FIRST",contact@example.com,VIP
+```
 
-- The columns are named "First Name" and "Last Name" instead of "Name"
-- The file uses "nombre" and "correo" (Spanish)
-- Names are formatted "Last, First" in some rows
-- There's a "Notes" column with additional contact info embedded in it
+```text
+nombre,apellido,correo,notas
+FIRST,LAST,contact@example.com,VIP
+```
 
-Each new variation means new code. The import function grows. Edge cases multiply. And still, the next file will have something you didn't anticipate.
+To handle even just these variations, you start writing code like this:
+
+```python
+import csv
+from io import StringIO
+
+from my_crm import file_contact  # Your CRM client (implementation not shown)
+
+
+def import_contact(raw_contact: str):
+    # Expect a 1-row CSV string (header + row).
+    row = next(csv.DictReader(StringIO(raw_contact)), None)
+    if not row:
+        raise ValueError("No contact row found")
+
+    # Email column mapping
+    email = (
+        row.get("email")
+        or row.get("e-mail")
+        or row.get("correo")
+        or row.get("e mail")
+    )
+    if not email:
+        raise ValueError("Could not find email column")
+
+    # Name column mapping + normalization
+    if row.get("name"):
+        full = row["name"].strip()
+        if "," in full:  # "Last, First"
+            last_name, first_name = [p.strip() for p in full.split(",", 1)]
+        else:            # "First Last"
+            first_name, last_name = full.split(" ", 1)
+    elif row.get("First Name") and row.get("Last Name"):
+        first_name, last_name = row["First Name"], row["Last Name"]
+    elif row.get("nombre") and row.get("apellido"):
+        first_name, last_name = row["nombre"], row["apellido"]
+    else:
+        raise ValueError("Could not find name columns")
+
+    notes = row.get("Notes") or row.get("notas") or ""
+
+    return file_contact(
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        notes=notes,
+    )
+```
+
+This handles a few CSV variations. Each new variation means new code. The import function grows. Edge cases multiply. And still, the next file will have something you didn't anticipate.
 
 ## The New Way: Give an Agent a Tool
 
@@ -45,38 +86,59 @@ The agent-based approach inverts the problem.
 
 Instead of writing code to handle every case, you define a capability—a tool—and describe what you want. The agent figures out how to use the tool to achieve the goal.
 
-Here's the same idea in Tactus (adapted from `code/chapter-01/04-basics-simple-agent.tac`):
+Here's the same idea in Tactus. Assume your application has already exposed a `file_contact` tool with typed inputs (`first_name`, `last_name`, `email`, `notes`). We'll define tools soon. (For a runnable version that defines a local stub tool, see `code/chapter-01/02-intro-contact-import.tac`.)
 
 ```lua
-done = tactus.done
-
-greeter = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
-    system_prompt = "Greet the user. When you're done, call the done tool with reason set to your greeting.",
-    initial_message = "Please greet the user with a friendly message",
-    tools = {done},
+input {
+    raw_contact = field.string{required = true, description = "One contact record as raw text"}
 }
 
-Procedure {
-    output = {
-        greeting = field.string{required = true},
-    },
-    function(input)
-        repeat
-            greeter()
-        until done.called()
+importer = Agent {
+    provider = "openai",
+    model = "gpt-4o-mini",
+    system_prompt = [[
+You will be given one contact record as raw text.
+It might be a 1-row CSV (with header), a JSON object, or an email header.
+Extract first name, last name, email, and notes (if present), then call file_contact exactly once.
+    ]],
+    tools = {file_contact},
+}
 
-        return {
-            greeting = done.last_call().args.reason
-        }
-    end
+output {
+    contact_id = field.string{required = true},
+}
+
+importer({message = "Import this contact record:\n" .. input.raw_contact})
+
+assert(file_contact.called(), "Agent did not call file_contact")
+
+return {
+    contact_id = file_contact.last_result()
 }
 ```
 
-That's it. You defined a capability (`done`), gave it to the agent, and wrote a tiny loop that runs until the agent signals completion.
+That's it. You exposed a capability (`file_contact`), gave it to the agent, and made a single agent call that results in a tool call.
 
-For contact import, the pattern is the same: you expose a `file_contact` tool (with a typed schema) and tell an agent to call it for each contact it finds. When the columns are `nombre` and `correo`, the agent maps them. When names are `Last, First`, it parses them. New formats arrive? The agent adapts—without you adding a new pile of conditionals.
+When the columns are `nombre` and `correo`, the agent maps them. When names are `Last, First`, it parses them. New formats arrive? The agent adapts—without you adding a new pile of conditionals.
+
+Now zoom out: in real systems, the “contact record” might not be a clean CSV row at all. You might get a JSON blob from an API, or someone pastes an email header into a support form. The Python approach needs new parsers; the agent-based version uses the same orchestration code:
+
+```json
+{
+  "nombre": "FIRST",
+  "apellido": "LAST",
+  "correo": "contact@example.com",
+  "notas": "VIP"
+}
+```
+
+```text
+From: "FIRST LAST" <contact@example.com>
+Subject: New contact
+X-Notes: VIP
+```
+
+That's the whole trick: if you give an agent a tool, then nobody has to fish.
 
 This is what we call **"Give an Agent a Tool."** You're not writing code to handle cases—you're providing a capability and describing intent. The intelligence handles the variations.
 

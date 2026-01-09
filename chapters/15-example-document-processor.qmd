@@ -1,9 +1,11 @@
 # Complete Example: Document Processor
 
-*This chapter will cover:*
+This chapter is a full example focused on file I/O and robust data processing, with an agent in the loop where it adds real value.
 
-- Processing files with File I/O
-- Iterating over data
-- Structured output
-- Error handling patterns
-- Testing document processing
+## This Chapter Will Cover
+
+- Reading and writing files safely
+- Iterating over documents/data with durable progress tracking
+- Extracting structured data from messy inputs
+- Error handling patterns that survive retries and restarts
+- Specs + mocks for deterministic tests, plus evals for extraction quality

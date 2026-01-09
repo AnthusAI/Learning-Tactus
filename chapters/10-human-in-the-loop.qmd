@@ -1,10 +1,17 @@
 # Human-in-the-Loop
 
-*This chapter will cover:*
+Human-in-the-loop (HITL) is where agent workflows stop being “cool demos” and start being trustworthy systems. This chapter introduces approvals and reviews as *language primitives*.
 
-- When agents need humans
-- `Human.approve()` for approval gates
-- `Human.input()` for free-form input
-- `Human.review()` for artifact review
-- Timeouts and defaults
-- How HITL works with checkpointing
+## This Chapter Will Cover
+
+- The three primitives you’ll use constantly:
+  - `Human.review(...)` for reviewing an artifact (like a draft email)
+  - `Human.approve(...)` for a yes/no gate before a risky action
+  - `Human.input(...)` for missing information the agent shouldn’t guess
+- Timeouts, defaults, and `on_timeout="error"` (what “fail safe” looks like)
+- How HITL works across environments (CLI, IDE, embedded applications)
+- The key promise: HITL waits are durable — you can stop the process and resume later
+
+## How It Connects to the Running Example
+
+We’ll add the obvious safety gate: **a human must approve before any email is sent**. The email tool remains a stub in this repo, but the workflow shape is the same as a real system.

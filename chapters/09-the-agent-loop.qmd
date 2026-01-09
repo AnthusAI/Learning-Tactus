@@ -1,10 +1,15 @@
 # The Agent Loop
 
-*This chapter will cover:*
+Most useful agents aren’t single-shot. They plan, act, check results, and sometimes need more turns. This chapter teaches multi-turn patterns without turning your code into a brittle “agent script.”
 
-- The canonical pattern: `repeat ... until done.called()`
-- Multi-turn conversations
-- Iteration limits for safety
-- Logging with `Log.info()`, `Log.warn()`
-- Handling agent responses
-- Per-turn tool control
+## This Chapter Will Cover
+
+- When you actually need a loop (and when you don’t)
+- Safe loop shapes (max turns, explicit stage progression, deterministic exits)
+- Logging with `Log.info/warn/error` so replays are legible
+- Per-turn tool control (enable a dangerous tool only when the workflow is ready)
+- Common failure modes: loops that never finish, tools called too early, “agent drift”
+
+## How It Connects to the Running Example
+
+We’ll keep the recap workflow mostly single-turn, but we’ll use a small loop to demonstrate how to iterate safely when the agent’s first draft isn’t good enough.
