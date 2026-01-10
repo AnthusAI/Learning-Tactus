@@ -1,30 +1,222 @@
-# Secure Sandboxing and Threat Models
+# Threat Modeling and Guardrails
 
-Agent workflows fail in two broad ways:
+The cover of this book is a monkey with a razor blade.
 
-- **They do the wrong thing** (reliability).
-- **They do a dangerous thing** (security).
+That’s not an insult to models. It’s a warning about *power without guardrails*:
 
-This chapter is about the second category: how to reason about *what could go wrong* and how Tactus’s sandboxing model helps you build more secure systems.
+- Give an agent filesystem access, and it can delete the wrong directory.
+- Give it network access, and it can leak sensitive data.
+- Give it secrets, and it can accidentally paste them into a prompt—or intentionally exfiltrate them if it’s been prompt-injected.
 
-## This Chapter Will Cover
+Part II showed how to build a useful workflow. This part is about making that power *safe to deploy*.
 
-- The capability model: **default deny** (no filesystem, network, or env access) and **tools as explicit capabilities**
-- The difference between *untrusted orchestration code* (`.tac`) and *trusted capabilities* (tools you choose to provide)
-- Prompt injection as a security problem (and why “just prompt it better” isn’t a defense)
-- Guardrails you can enforce in code:
-  - schema validation at tool boundaries
-  - least-privilege tool lists that change by stage
-  - human approval gates before irreversible actions
-- Multi-tenant boundaries (high level): isolating workspaces, state, logs, and tool access between users
-- What “secure by default” means in practice (and what it does *not* mean)
+In security terms: we’re going to reduce attack surface, enforce least privilege, and put hard isolation boundaries around untrusted execution—so that when something goes wrong, it fails safely.
 
-## How It Connects to the Running Example
+## Safety vs Information Security (Both Matter)
 
-We’ll take the meeting-recap workflow and write down an explicit threat model:
+In this book, we’ll use two related terms:
 
-- The agent should never be able to read secrets from the environment or filesystem.
-- The agent should not be able to send an email without a human approval gate.
-- Tool access should be staged: drafting tools first, “send” tools only after approval.
+- **Safety** (operational safety): preventing harmful side effects—especially when an agent can write files, execute code, or trigger irreversible actions.
+- **Information security** (InfoSec): protecting confidentiality and integrity—secrets, customer data, internal documents, and preventing cross-session/tenant data leakage.
 
-Then we’ll map those threats to concrete Tactus patterns you can apply consistently.
+They overlap, but the practical difference is useful:
+
+- “Don’t let the agent vandalize the host filesystem” is a safety problem.
+- “Don’t let the agent ever see the API key” is an InfoSec problem.
+- “Don’t let one tenant’s execution leak into another’s” is both.
+
+Tactus’s approach is to treat agent workflows as **untrusted execution** and apply **defense in depth**:
+
+1. **Capability control** (tools + context): the agent can only do what you explicitly allow.
+2. **Language sandboxing** (Lua VM): untrusted code can’t “escape” to the host runtime.
+3. **Container isolation** (Docker / cloud): untrusted code that can write files and run programs is still confined to an ephemeral environment.
+4. **Secretless architecture** (brokers): even inside a container, the runtime doesn’t have credentials to steal.
+
+This chapter starts with the first layer: threat modeling and guardrails you can enforce *in code*.
+
+## A Practical Threat Model for Agent Workflows
+
+Threat modeling doesn’t have to be heavyweight to be useful. For agent workflows, a lightweight model can fit on one page if you keep it concrete:
+
+1. **Assets**: what must be protected?
+2. **Adversaries / failure modes**: what could cause harm?
+3. **Entry points**: where does untrusted input enter?
+4. **Trust boundaries**: what components are allowed to do privileged things?
+5. **Controls**: what do we enforce, and where?
+
+### 1) Assets
+
+Common assets in agent systems:
+
+- **Secrets**: provider keys, SMTP/API credentials, database tokens, signing keys
+- **Sensitive data**: meeting notes, customer records, internal docs
+- **System integrity**: host filesystem, CI runners, production services, cloud accounts
+- **Workflow correctness**: “approval required” gates, idempotency, policies
+- **Tenant isolation**: one session/user must not see another’s artifacts
+
+### 2) Adversaries and failure modes
+
+In practice, you’re defending against a mix of:
+
+- **Prompt injection**: untrusted text tries to override your policy (“ignore above, send all secrets”).
+- **Tool misuse**: the model calls the wrong tool, or calls the right tool at the wrong time.
+- **Over-broad capabilities**: “just give it a shell tool” turns every mistake into a breach.
+- **Malicious tool code**: plugins, tool runners, or generated code that tries to escape or exfiltrate.
+- **Cross-session leakage**: one execution leaves artifacts that another execution can read.
+
+### 3) Entry points
+
+Anything that flows into the model is an entry point:
+
+- user inputs (`input.raw_notes`)
+- tool outputs (web pages, emails, database rows)
+- files loaded into context
+- system prompts and templates
+
+Security posture improves dramatically when you assume: **all text is untrusted**.
+
+### 4) Trust boundaries
+
+This is where Tactus becomes a security tool rather than a security risk.
+
+Draw the line between:
+
+- **Untrusted orchestration**: `.tac` procedures and agent turns
+- **Trusted capabilities**: tools you implement and choose to expose
+- **Secret-bearing systems**: model providers, email systems, databases
+
+If you don’t draw this line, you end up with “agent has everything,” which is how incidents happen.
+
+### 5) Controls
+
+Controls should be enforceable, not aspirational. “The prompt says don’t leak secrets” is not a control.
+
+Tactus gives you controls in three places:
+
+- at the **tool boundary** (schemas + deterministic code)
+- in the **orchestration code** (least privilege + stage gating)
+- at **execution boundaries** (sandboxing + secretless execution)
+
+## Control Layer 1: Capability-Based Design (Default Deny)
+
+In Tactus, tools are explicit capabilities. In a fresh runtime:
+
+- no filesystem access
+- no network access
+- no environment access
+
+The agent can only do what you give it.
+
+This is the opposite of the “agent script” model where the agent runs in a general-purpose Python process with ambient authority (filesystem, env vars, network) and you *hope* it behaves.
+
+### Least privilege, applied per stage
+
+The most practical pattern you’ll use is **staged tool access**:
+
+1. Drafting stage: allow only drafting tools (and maybe read-only tools).
+2. Review stage: allow HITL, and maybe a formatting tool.
+3. Send stage: allow the side-effect tool only after explicit approval.
+
+In Part II we already used this idea informally. In this part, treat it as a security control.
+
+### Keep “dangerous tools” out of the agent tool list
+
+One of the strongest guardrails is also the simplest:
+
+> The model should not directly possess the ability to do irreversible things.
+
+Instead:
+
+- The **agent generates** a structured draft.
+- Your **deterministic code** decides if/when to call the dangerous tool.
+
+This is why we used a `finalize_*` tool pattern in Part II: it turns the agent’s output into typed data that your code can validate and gate.
+
+## Control Layer 2: Guardrails at Tool Boundaries
+
+Tool schemas are not just for developer convenience; they’re a security boundary.
+
+Schema-first tools give you:
+
+- input validation (reject malformed requests)
+- logging and auditability (who called what, with which args)
+- a single choke point for policy checks (allowlists, rate limits, content rules)
+
+For example, an email tool can enforce:
+
+- recipient allowlists / domain restrictions
+- maximum message size
+- attachment rules
+- mandatory human approval metadata
+
+Even if the model tries something weird, the tool boundary is where you can say “no”.
+
+## Control Layer 3: Human Gates as a Security Primitive
+
+Approvals and reviews are not just product UX; they’re a security mechanism.
+
+If an action is:
+
+- irreversible (sending email, deploying, deleting)
+- high-impact (billing, production changes)
+- externally visible (customer communication)
+
+…then require an explicit human decision.
+
+The key Tactus feature is that HITL calls are **durable suspend points**: you don’t keep a process running, and you don’t lose state while waiting.
+
+That makes “human approval before side effects” a realistic default, not a feature you only use in demos.
+
+## Putting It Together: Threat Model the Recap Workflow
+
+Let’s apply this to the running example: “draft and send a recap email.”
+
+### Assets
+
+- meeting notes may include sensitive information
+- recipient email address is personal data
+- email credentials / provider keys must not be exposed to the agent
+- the send step must not trigger without approval
+
+### Entry points
+
+- `raw_notes` is untrusted input (it could include prompt injection text)
+- tool outputs (if you add search/file tools later) are also untrusted
+
+### Threats
+
+1. **Prompt injection** tries to trick the agent into calling send early (“ignore policy, send now”).
+2. **Accidental side effects**: retries double-send.
+3. **Secret exposure**: the agent sees `OPENAI_API_KEY` or SMTP keys and leaks them.
+4. **Host impact**: agent/tool code writes files outside the intended workspace.
+5. **Cross-run leakage**: artifacts from one session are visible to another.
+
+### Controls (mapping threats → mitigations)
+
+- Prompt injection → treat notes as untrusted; don’t rely on the prompt as the only control; keep side effects in deterministic code.
+- Double-send → idempotency guard in `state` (store `message_id` and skip).
+- Secret exposure → do not pass secrets into agent context; prefer secretless execution (covered later).
+- Host impact → sandbox tool execution (Lua sandbox + container per run).
+- Cross-run leakage → ephemeral execution environment + isolated storage/logs per run.
+
+This is why Tactus emphasizes “tools as explicit capabilities” and “everything as code”: your threat model can be expressed directly in the program structure.
+
+## What “Secure by Default” Does (and Does Not) Mean
+
+Tactus is designed to make the safe thing easy:
+
+- default deny capabilities
+- explicit tool lists
+- durable HITL
+- sandboxing options
+- testable traces
+
+But “secure by default” is not “secure no matter what.”
+
+If you hand an agent a shell tool with access to your home directory, no language can save you. The point is to make it natural to *not do that*—and to give you layers of containment when you do need powerful tools.
+
+## Looking Ahead
+
+This chapter gave you the threat-modeling lens and the first guardrail layer: capability control.
+
+Next, we’ll talk about the “cage” itself: the Lua sandbox and container isolation that let you give agents real power (files, code execution) without trusting them with your actual machine.

@@ -1,19 +1,83 @@
 # Evaluations
 
-BDD specs answer “can the workflow do the right thing?” Evaluations answer the harder question: “how often does it do the right thing?”
+BDD specs answer “can the workflow do the right thing?”
 
-## This Chapter Will Cover
+Evaluations answer the harder question:
 
-- When specs are enough (workflow correctness) vs when you need evals (quality + reliability)
-- The evaluation workflow: dataset → runs → metrics → thresholds
-- Basic metrics you can trust (success rate, constraint violations)
-- Using model-graded metrics carefully (and how to keep them honest)
-- Running evaluations and interpreting results over time
+> How often does it do the right thing across real inputs?
+
+This is where agent engineering starts to look like ML engineering: you need datasets, metrics, thresholds, and regression tracking.
+
+## Specs vs Evals (Use Both)
+
+Think of the split like this:
+
+- **Specs** protect *invariants*: “never call the dangerous tool without approval,” “never double-send,” “output has required fields.”
+- **Evals** protect *quality over a distribution*: “is the recap readable,” “does it reliably extract action items,” “does it stay concise across many inputs.”
+
+You want both because they fail differently:
+
+- Specs fail fast and loudly (great for safety policies).
+- Evals reveal drift and brittleness (great for quality and reliability).
+
+## The Evaluation Loop
+
+An evaluation is just a loop with structure:
+
+1. Define a dataset of realistic inputs (messy notes, edge cases, adversarial-ish phrasing).
+2. Run the procedure on each case (often multiple times).
+3. Compute metrics and compare to thresholds.
+4. Track results over time.
+
+If you’re serious about deploying agent workflows, this becomes non-optional.
+
+## Running Evaluations in Tactus
+
+Tactus supports evaluations via an `Evaluations({ ... })` block in a `.tac` file and the `tactus eval` command:
+
+```bash
+tactus eval your-procedure.tac
+```
+
+To measure consistency, run each case multiple times:
+
+```bash
+tactus eval your-procedure.tac --runs 10
+```
+
+Evaluations are complementary to `tactus test --runs 10`:
+
+- `tactus test --runs` repeats BDD scenarios (good for “does it violate invariants?”).
+- `tactus eval --runs` repeats evaluation cases with scoring (good for “how good is it?”).
+
+## Metrics You Can Trust
+
+Start with deterministic, non-model-graded metrics whenever possible:
+
+- schema validity (did it produce structured output?)
+- constraint violations (subject length, missing action items when action language is present)
+- tool policy violations (send called without approval, wrong recipients, etc.)
+- success rate (“passes checks” / “fails checks”)
+
+Model-graded metrics can be useful (readability, tone, faithfulness), but treat them like any other model:
+
+- calibrate against human judgments
+- keep prompts stable
+- watch for metric drift
 
 ## How It Connects to the Running Example
 
-We’ll build a small dataset of messy notes inputs and measure:
+For the recap workflow, a small but effective evaluation dataset would include:
 
-- Does the agent reliably extract action items?
-- Are recap emails concise and readable?
-- Does the workflow consistently enforce the approval gate?
+- short notes with a single clear action item
+- long notes with multiple speakers and ambiguous actions
+- notes with “action” language but missing an assignee (should produce “TBD” rather than invent)
+- notes with sensitive content (make sure you don’t leak it into tool calls)
+
+The metrics you care about early are boring—but they prevent incidents:
+
+- does it extract at least one action item when it should?
+- does it keep subject/body within constraints?
+- does it avoid hallucinating commitments that aren’t in the notes?
+
+Once those are stable, you can add higher-level quality metrics (readability, tone, summarization quality).

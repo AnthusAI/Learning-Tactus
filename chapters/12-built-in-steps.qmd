@@ -1,19 +1,105 @@
 # Built-in Step Definitions
 
-Tactus ships with a set of step definitions that make specs practical: you can assert tool calls, outputs, and state without writing custom glue code.
+BDD only works if the assertions are easy to write.
 
-## This Chapter Will Cover
+Tactus ships with a library of built-in step definitions so your specs can focus on intent (policy and invariants) rather than “glue code”.
 
-- Tool steps (called/uncalled, args matching, call counts)
-- Output steps (existence, equality, patterns, “similar to”)
-- State steps (specific values, counters, stage transitions)
-- HITL steps:
-  - mocking `Human.approve` / `Human.input` responses
-  - asserting that a workflow asked for approval/review
-- When to extend with custom steps (`step(...)`) and when not to
+This chapter is a quick field guide to the steps you’ll use most often.
+
+## Tool Assertions
+
+Tools are a natural audit surface for agent workflows. Common steps:
+
+- `the {tool} tool should be called`
+- `the {tool} tool should not be called`
+- `the {tool} tool should be called exactly {n} time(s)`
+- `the {tool} tool should be called at least {n} time(s)`
+- `the {tool} tool should be called with {param}={value}`
+
+In practice, “should not be called” is one of your most valuable invariants.
+
+Example:
+
+```gherkin
+Then the send_email tool should not be called
+And the finalize_recap tool should be called
+```
+
+## State and Stage Assertions
+
+State is how you encode “what happened” in a durable workflow. Stages are how you make progress legible.
+
+Useful steps include:
+
+- `the state {key} should exist`
+- `the state {key} should be {value}`
+- `the stage should be {stage}`
+- `the stage should transition from {a} to {b}`
+
+Example:
+
+```gherkin
+Then the state message_id should exist
+And the stage should be complete
+```
+
+## Output Assertions
+
+Outputs are your contract with callers. Steps include:
+
+- `the output {key} should exist`
+- `the output {key} should be {value}`
+- `the output {key} should match pattern "{regex}"`
+
+Pattern matching is especially useful for “human-ish” text where exact matches are brittle.
+
+## Running the Procedure (When Steps)
+
+Most specs follow the same shape:
+
+```gherkin
+Given the procedure has started
+When the procedure runs
+Then the procedure should complete successfully
+```
+
+If your workflow is agent-driven (multi-turn), you’ll also see:
+
+```gherkin
+When the {agent} agent takes turns
+```
+
+In both cases, Tactus executes the procedure as written; your spec is asserting what happened.
+
+## Setting Inputs in Scenarios
+
+You can set procedure inputs in Gherkin:
+
+```gherkin
+Given the input recipient_name is "Sam"
+And the input target_count is 3
+When the procedure runs
+Then the state counter should be 3
+```
+
+This is how you test different branches without creating separate files.
+
+## When to Write Custom Steps
+
+Built-in steps cover a lot. Add custom steps only when:
+
+- you need a compound assertion (e.g., “action items should be non-empty when notes contain action language”)
+- you need to inspect a complex nested structure
+- you want a reusable domain-specific check across many specs
+
+Custom steps can be defined in Lua using `step("...", function(...) ... end)` inside your `.tac` file. Keep them deterministic and small—custom steps are test code, not workflow code.
 
 ## How It Connects to the Running Example
 
-We’ll tighten the recap spec using built-in steps so it reads like a policy:
+In Part II, we already used built-in steps to assert things like:
 
-“When the procedure runs, it must ask for approval, and it must not send email unless approved.”
+- “send_email is called exactly once”
+- “state.message_id exists”
+- “stage is complete”
+
+In this part, we’ll use the same step library to make our safety and reliability policies executable.

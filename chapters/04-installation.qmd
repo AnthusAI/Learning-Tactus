@@ -73,11 +73,13 @@ If that passes, you’re ready for most of the book.
 
 Tactus can run procedures inside a fresh container so agent tool code can’t touch your host system. This becomes important as soon as you start giving agents filesystem and network tools.
 
-You’ll learn the details in Part IV. For now:
+You’ll learn the details in Part III. For now:
 
 - If you have Docker installed and running, you can check status with `tactus sandbox status`.
 - You can build the sandbox image with `tactus sandbox rebuild`.
+- By default, Tactus is designed to run in a container sandbox when Docker is available (and to error if it’s not, unless you explicitly opt out).
 - You can run a procedure in the container sandbox by adding `--sandbox` to `tactus run ...`.
+- If you need to run without Docker, use `--no-sandbox` (or set `sandbox.enabled: false` in config) and treat it as a conscious security tradeoff.
 
 If you don’t have Docker, you can still run Tactus locally without container isolation—but you won’t have dev/prod parity for the sandboxed execution model.
 

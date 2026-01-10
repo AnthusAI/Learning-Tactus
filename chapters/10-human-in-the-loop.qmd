@@ -75,4 +75,4 @@ At this point in Part II, our workflow is:
 - Bounded and deterministic (safe loop shape)
 - Trustworthy (human gates before risky actions)
 
-Next, Parts III and IV are about making this scale: specs and evaluations for correctness over time, and sandboxing/brokers for strong security boundaries.
+Next, Part III is about guardrails: putting the monkey with a razor blade in a cage (capability control, sandboxing, isolation boundaries, secretless execution). After that, Part IV covers reliability: specs and evaluations so you can trust the workflow over time.

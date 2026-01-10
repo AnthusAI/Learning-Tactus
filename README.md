@@ -33,8 +33,8 @@ quarto render
 
 - **Part I: Foundations** — What Tactus is, plus transparent durability, everything-as-code, and a quick install to run the examples.
 - **Part II: Build a Useful Agent** — A single running example, iteratively extended until it’s useful (including HITL).
-- **Part III: Reliability and Correctness at Scale** — Behavior specs and evaluations.
-- **Part IV: Secure Execution at Scale** — Sandboxing, isolation boundaries, and secretless runtimes.
+- **Part III: Guardrails (Safety + InfoSec)** — Capability control, sandboxing, isolation boundaries, and secretless execution.
+- **Part IV: Reliability and Correctness at Scale** — Behavior specs and evaluations.
 - **Part V: Putting It Together** — Complete examples you can adapt.
 
 ## Code Examples

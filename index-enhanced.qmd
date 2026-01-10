@@ -74,8 +74,8 @@ This book is designed to be read sequentially. Each chapter builds on the previo
 
 - **Part I** lays the foundations and gets you set up: what Tactus is, plus transparent durability, everything-as-code, and a quick install so you can run the examples.
 - **Part II** builds a useful agent workflow by iteratively extending a single running example: typed I/O, tools, state/idempotency, loops, and HITL.
-- **Part III** focuses on reliability and correctness at scale: behavior specs and evaluations.
-- **Part IV** focuses on secure execution and information security: sandboxing, isolation boundaries, and keeping secrets out of untrusted runtimes.
+- **Part III** is about guardrails: safety and information security for “agents with power” (capability control, sandboxing, isolation boundaries, secretless execution).
+- **Part IV** is about reliability at scale: behavior specs and evaluations to make sure the workflow keeps doing the right thing over time.
 - **Part V** ends with complete examples you can adapt.
 
 Every code example in this book is a runnable `.tac` file. You can find them in the `code/` directory, organized by chapter.

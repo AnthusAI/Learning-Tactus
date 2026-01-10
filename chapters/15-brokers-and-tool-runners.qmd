@@ -1,30 +1,132 @@
-# Secure Brokers and Tool Runners
+# Sandboxing Layers: Lua VM and Containers
 
-The Lua sandbox is one layer of defense: it makes `.tac` code secure to run in-process by default. But production systems often need *stronger isolation boundaries*—especially around secrets and network access.
+In the last chapter we treated the agent like what it is in production: **untrusted execution with the ability to take actions**.
 
-This chapter introduces a practical deployment mindset: treat your agent runtime as **untrusted**, keep it **secretless**, and broker privileged capabilities (model calls, credentialed tools) through narrow interfaces.
+Capability control (tools + stages + approvals) is the first line of defense. But once you start giving agents real power—writing files, generating code, running programs—you also want a *cage*:
 
-## This Chapter Will Cover
+> If the monkey has a razor blade, it shouldn’t be standing in your living room.
 
-- Why “secretless by default” changes the security game (there’s nothing to steal)
-- A common architecture shape:
-  - a runtime process/container that runs `.tac` code + checkpoints
-  - a trusted broker process that holds credentials and performs privileged operations
-  - tool runners that execute tools in different trust zones
-- Three useful “tool runner” modes (conceptually):
-  - **sandbox**: run tool code alongside the runtime (no secrets)
-  - **isolated**: run tool code in a separate container (secrets allowed)
-  - **host**: run tool code on the host (explicitly trusted)
-- Keeping I/O simple across runners: workspace mounts, relative paths, and consistent working directories
-- Streaming and observability: preserving streaming responses while still enforcing boundaries
-- Deployment tradeoffs: per-run isolation vs pooled workers, and what changes in multi-tenant environments
+This chapter is about isolation boundaries that security professionals recognize:
 
-## How It Connects to the Running Example
+- language sandboxing (reducing what code can do)
+- OS-level sandboxing (constraining what code can touch)
+- ephemeral execution (reducing persistence and cross-run leakage)
 
-We’ll revisit the “send recap email” step and show how you would deploy it safely:
+Tactus is built around a layered model: Lua sandboxing + container isolation, with a path to “secretless” execution for production (next chapter).
 
-- The runtime runs without outbound network access and without provider/email credentials.
-- The model API call is performed by a broker that owns the provider key.
-- The email tool runs in an isolated runner that has SMTP/API credentials, and is only reachable through the tool interface.
+## Layer 1: Lua Sandboxing (Language-Level)
 
-The workflow stays the same at the `.tac` level—you’re changing the *execution boundaries*, not rewriting the agent logic.
+Lua is widely used in environments where you *must* execute untrusted code safely: game modding, embedded systems, nginx scripting, and more. The language is designed to be sandboxed.
+
+Tactus uses that property directly:
+
+- `.tac` code runs in a **restricted Lua VM**
+- the standard library is limited to safe functionality
+- there is no ambient filesystem/network/OS access
+- all I/O goes through **tools you provide**
+
+This is why Tactus can credibly talk about running user-contributed procedures. In Python, “just sandbox it” is not a real option; in Lua, it’s the default operating model.
+
+### What this protects against
+
+Lua sandboxing primarily protects the **host application** from untrusted orchestration code:
+
+- no arbitrary imports of privileged host libraries
+- no `os.execute` / shell escapes
+- no direct file reads/writes
+- no direct network calls
+
+But it does *not* solve everything.
+
+If you provide a filesystem tool and a network tool, then the agent can still cause harm through those capabilities. That’s why we need OS-level isolation.
+
+## Layer 2: Container Isolation (OS-Level)
+
+Containerization is the practical way to make “agents that write files and run code” safe enough for development and production.
+
+The principle is simple:
+
+- Each procedure execution runs in its **own container**
+- The container has an **ephemeral filesystem**
+- Only explicit mounts are accessible
+- Resource limits (CPU/memory/time) reduce blast radius
+- Network access can be controlled (or disabled entirely)
+
+This gives you the ability to hand an agent powerful tools—write files, run Python, compile code—without giving it access to your actual machine.
+
+From a security standpoint, this is about:
+
+- **integrity**: protecting the host from vandalism
+- **confidentiality**: limiting what the runtime can read
+- **isolation**: preventing cross-run/tenant leakage through shared state
+
+### Ephemeral by default
+
+An important “security smell” in agent systems is persistence-by-accident:
+
+- an agent writes a file with sensitive data
+- that file gets picked up by a later run
+- now you have cross-session leakage and unclear provenance
+
+Running each execution in a fresh container makes persistence explicit. If you want a file to survive, you mount a volume and choose what crosses the boundary.
+
+That is exactly the kind of explicitness InfoSec teams want.
+
+## Running with the Docker Sandbox
+
+Tactus includes CLI support for managing the sandbox image and checking availability:
+
+```bash
+tactus sandbox status
+tactus sandbox rebuild
+```
+
+And you can run a procedure in the sandbox:
+
+```bash
+tactus run my-procedure.tac --sandbox
+```
+
+If Docker is unavailable and sandboxing is required, Tactus will fail safe (it won’t silently fall back to running on your host). If you *explicitly* want to run without container isolation, you can opt out:
+
+```bash
+tactus run my-procedure.tac --no-sandbox
+```
+
+In production, “fail closed” is often the right default. In local development, you might opt out temporarily—but you should treat it like disabling seatbelts.
+
+## Network and Exfiltration Risk
+
+Most agent systems need outbound network access to call model providers. That creates an unavoidable tension:
+
+- outbound access is required for usefulness
+- outbound access is also the primary path for data exfiltration
+
+Container isolation lets you control network mode. In development you might allow outbound access. In production, a common strategy is:
+
+- run the untrusted runtime with **no outbound network**
+- broker model calls and credentialed tools through a trusted service
+
+That is the “secretless runtime” model, and it’s the topic of the next chapter.
+
+## Why This Matters for the IDE (Streaming + Parity)
+
+A common worry is that sandboxing makes developer experience worse: “Do I lose streaming? Does this make iteration slow?”
+
+Tactus is designed so you can keep the ergonomic parts (streaming traces, step-by-step visibility) while still enforcing isolation boundaries.
+
+In practice, a good development setup looks like:
+
+- press Run in the IDE
+- the procedure executes inside a container
+- you still see streaming output, tool calls, and stage transitions in real time
+
+That parity is the point: you develop with the same isolation model you deploy with.
+
+## Looking Ahead
+
+Lua sandboxing and containers put the monkey in a cage, but there’s one more problem:
+
+If the container contains secrets (provider keys, SMTP credentials), the agent can still leak them.
+
+Next, we’ll add the final guardrail: **secretless execution**—moving secrets and privileged operations behind narrow broker interfaces, while keeping the `.tac` workflow code unchanged.

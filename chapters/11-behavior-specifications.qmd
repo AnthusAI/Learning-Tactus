@@ -1,18 +1,107 @@
 # Behavior Specifications
 
-Tactus procedures mix deterministic code (Lua) and non-deterministic steps (agents). Behavior specifications are how you keep that mix from turning into guesswork.
+At this point in the book you can build a workflow that is both useful *and* well-contained.
 
-## This Chapter Will Cover
+The remaining question is the one every engineering team eventually asks:
 
-- BDD philosophy: specify *behavior*, not implementation
-- Gherkin syntax: `Feature` / `Scenario` / `Given` / `When` / `Then`
-- Embedding specs directly in `.tac` files with `Specifications([[ ... ]])`
-- Running specs with `tactus test` and understanding the output
-- Writing specs for tool-using workflows (assert “dangerous tools weren’t called”)
+> How do we know it keeps doing the right thing next week?
+
+Tactus procedures mix deterministic code (Lua) and non-deterministic steps (agents). Behavior specifications are how you stop that mix from turning into “it worked on my laptop” folklore.
+
+If Part III was about putting the monkey with a razor blade in a cage, Part IV is about making sure it reliably shaves the right thing.
+
+## Specs Are About Invariants
+
+For agent workflows, a “test” is usually not “the exact output string matches”.
+
+A spec is a set of *invariants* that must hold:
+
+- a dangerous tool was never called
+- a stage transition happened
+- state contains an idempotency marker after a side effect
+- outputs match a schema and basic constraints
+- the workflow fails fast when preconditions aren’t met
+
+Those are the properties that keep you out of incident postmortems.
+
+## Gherkin in Tactus
+
+Tactus uses Gherkin-style BDD (behavior-driven development) directly inside `.tac` files:
+
+- `Feature` / `Scenario` describe intent in plain language
+- `Given` / `When` / `Then` use built-in step definitions to execute and assert
+
+In code, you embed it like:
+
+```lua
+Specifications([[
+Feature: Idempotent send step
+  Scenario: Send is only performed once
+    Given the procedure has started
+    When the procedure runs
+    Then the send_email tool should be called exactly 1 time
+    And the state message_id should exist
+]])
+```
+
+That example is runnable in this repo: `code/chapter-08/35-meeting-recap-idempotent-send.tac`.
+
+## Running Specs
+
+Run a spec once:
+
+```bash
+tactus test code/chapter-08/35-meeting-recap-idempotent-send.tac
+```
+
+Run in mock mode (fast, deterministic, no API keys):
+
+```bash
+tactus test code/chapter-08/35-meeting-recap-idempotent-send.tac --mock
+```
+
+Measure consistency by running each scenario multiple times:
+
+```bash
+tactus test code/chapter-08/35-meeting-recap-idempotent-send.tac --runs 10
+```
+
+## Mocking: Make Tests Cheap
+
+The fastest path to maintainable specs is to keep them cheap to run.
+
+In this book, most examples include a `Mocks { ... }` block so that:
+
+- agent calls don’t hit real model APIs
+- tool calls are deterministic
+- you can run tests in CI without secrets
+
+Mock mode is not only about cost; it’s what makes agent workflow iteration feel like normal software development.
+
+## How to Write Good Specs for Agent Workflows
+
+Three patterns show up again and again:
+
+1. **Assert capability boundaries.**
+   - “the send tool should not be called”
+   - “the filesystem tool should not be called”
+2. **Assert state/progress markers.**
+   - “the state message_id should exist”
+   - “the stage should be complete”
+3. **Assert shape and constraints of outputs.**
+   - “output subject should match pattern …”
+   - “output action_items should exist”
+
+These are the invariants that make “bounded autonomy” real.
 
 ## How It Connects to the Running Example
 
-We’ll write a spec for the recap workflow that locks in the safety invariant:
+Part II gave us a recap workflow that drafts, iterates, asks for human approval, and sends.
 
-- The workflow must request human approval
-- The email tool must not be called unless approval is granted
+In Part IV, we’ll use specs to lock in policies like:
+
+- “send_email must never be called unless approved”
+- “send must be idempotent across retries”
+- “draft output must have subject/body/action_items”
+
+Then we’ll graduate from “can it work?” to “how often does it work?” with evaluations.
