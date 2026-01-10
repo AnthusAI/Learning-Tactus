@@ -75,4 +75,4 @@ At this point in Part II, our workflow is:
 - Bounded and deterministic (safe loop shape)
 - Trustworthy (human gates before risky actions)
 
-Next, Parts III and IV are about making this scale: correctness, idempotency, testing, and security boundaries.
+Next, Parts III and IV are about making this scale: specs and evaluations for correctness over time, and sandboxing/brokers for strong security boundaries.

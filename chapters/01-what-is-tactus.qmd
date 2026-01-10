@@ -101,7 +101,7 @@ If you've written code in Python, JavaScript, or any similar language, you're re
 
 ## How Is This Book Organized?
 
-**Part I: Foundations** explains what Tactus is and the two design choices that make it different: transparent durability and everything-as-code.
+**Part I: Foundations** explains what Tactus is and the design choices that make it different (transparent durability and everything-as-code), then ends with a quick setup so you can run the examples.
 
 **Part II: Build a Useful Agent** walks through a single running example that we keep extending until it’s genuinely useful.
 

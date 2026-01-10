@@ -1,15 +1,160 @@
 # State Management
 
-State is how durable workflows stay correct across retries, restarts, and human delays. This chapter focuses on *practical* state: idempotency, progress tracking, and “don’t do the dangerous thing twice.”
+Tools make an agent *powerful*. State makes an agent workflow *safe*.
 
-## This Chapter Will Cover
+In the last chapter, we gave our recap workflow a “send email” tool (stubbed in this repo). The moment a workflow can change the outside world—send a message, write a file, create a ticket—you inherit a new requirement:
 
-- Core operations: `State.get`, `State.set`, `State.increment`
-- State vs local variables (when durability matters)
-- Idempotency patterns for side effects (email sends, writes, API calls)
-- Modeling workflow stages in state (so your procedure is self-describing when resumed)
-- Debugging and inspecting state during development
+**Don’t do the dangerous thing twice.**
 
-## How It Connects to the Running Example
+This chapter focuses on practical state for AI engineering:
 
-We’ll add a simple guard so the recap workflow can be retried safely without “double sending” the same email. This is where Tactus starts to feel like a language designed for production, not demos.
+- tracking progress in a way you can inspect later
+- guarding side effects so retries don’t duplicate work
+- making long-running workflows legible (especially around human delays)
+
+## `state` vs Local Variables
+
+Tactus gives you *transparent durability*: your procedure can pause at tool calls and HITL points and resume later without losing its place.
+
+So why use state at all?
+
+Because `state` is the workflow’s **explicit, inspectable memory**:
+
+- it shows up in traces and debugging views
+- you can assert against it in BDD specs
+- you can reference it in templates (like `{state.some_key}`) in prompts and messages
+- it makes intent obvious (“this value matters across time”) in a way local variables don’t
+
+As a rule of thumb:
+
+- Use **local variables** for short-lived computation and shaping data inside a function.
+- Use **`state.*`** for progress tracking, idempotency guards, and anything you want to be visible when you resume or debug the workflow.
+
+## The State API (What You Actually Write)
+
+State is accessed via a metatable-enabled `state` variable:
+
+```lua
+-- Set
+state.items_processed = 0
+
+-- Get
+local n = state.items_processed
+
+-- Check for existence / truthiness
+if state.message_id then
+  Log.info("Already sent", {message_id = state.message_id})
+end
+```
+
+There are also helper functions for common patterns:
+
+```lua
+State.increment("attempts")        -- attempts += 1
+State.increment("attempts", 5)     -- attempts += 5
+State.append("events", "drafted")  -- append to a list
+local snapshot = State.all()       -- dump all state
+```
+
+You’ll mostly use `state.*` assignment for normal values, and reach for the helpers when you want concise, intention-revealing operations (counters and append-only logs).
+
+## The Big Idea: Idempotency Guards
+
+Durability prevents the runtime from repeating checkpointed work during *resume*. But in production, “do it twice” still happens:
+
+- your code changes and you re-run the procedure
+- you add a retry loop around a tool call
+- you re-enter the “send” step after a human review
+- your tool implementation returns an error after doing the side effect
+
+So you still need a simple, explicit guard: **record the result of the side effect, and skip if it already happened**.
+
+For “send email”, the obvious marker is a `message_id`:
+
+```lua
+local function send_once(to, subject, body)
+  if state.message_id then
+    return state.message_id
+  end
+
+  local result = send_email({to = to, subject = subject, body = body})
+  state.message_id = result.message_id
+  return state.message_id
+end
+```
+
+This is a tiny pattern with huge consequences: it turns “retries are scary” into “retries are normal”.
+
+### A Note on True Idempotency
+
+The best idempotency guard is often *an idempotency key supported by the external system* (Stripe-style): you generate a stable key, store it in state, and pass it to the API so the API guarantees “only one real send”.
+
+This book’s examples use a stubbed `send_email`, but the workflow shape is the same.
+
+## Make Workflows Legible With Stages
+
+State makes workflows correct. Stages make them understandable.
+
+At the top of a file, declare the stages you expect:
+
+```lua
+Stages({"drafting", "sending", "complete"})
+```
+
+Inside your procedure, set/advance stages as you go:
+
+```lua
+Stage.set("drafting")
+-- create draft...
+
+Stage.set("sending")
+-- call send tool (guarded)...
+
+Stage.set("complete")
+```
+
+This pays off in three ways:
+
+- traces are easier to read (“where did it stop?”)
+- specs can assert progress (“stage should be complete”)
+- UIs can show operators what’s happening without parsing logs
+
+## Example: A Retry-Safe “Send” Step
+
+The example for this chapter is `code/chapter-08/35-meeting-recap-idempotent-send.tac`.
+
+It extends the running recap workflow with:
+
+- a `state.message_id` guard so “send” happens at most once
+- a `State.increment("send_attempts")` counter for observability
+- stage markers so you can see drafting → sending → complete
+
+Run it:
+
+```bash
+tactus run code/chapter-08/35-meeting-recap-idempotent-send.tac \
+  --param recipient_name="Sam" \
+  --param recipient_email="sam@example.com" \
+  --param raw_notes="Discussed Q1 launch timeline. Risks: vendor delays. Action: Sam to confirm dates by Friday."
+```
+
+And test it in mock mode:
+
+```bash
+tactus test code/chapter-08/35-meeting-recap-idempotent-send.tac --mock
+```
+
+## Debugging State
+
+State is meant to be looked at. Two practical tricks:
+
+- Log a snapshot when you fail: `Log.error("...", {state = State.all()})`
+- Keep your important flags explicit: `state.message_id`, `state.approved`, `state.last_issues`
+
+When a workflow is durable, the hardest bugs are usually “what did it *think* it already did?” State gives you that answer.
+
+## Looking Ahead
+
+We now have a workflow that can integrate with the outside world *without being terrifying to retry*.
+
+Next, we’ll introduce multi-turn agent loops for a different kind of reliability: not “don’t double-send”, but “don’t ship a low-quality draft”.

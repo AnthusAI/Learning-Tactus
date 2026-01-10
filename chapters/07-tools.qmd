@@ -90,7 +90,12 @@ And test it in mock mode:
 tactus test code/chapter-07/30-meeting-recap-send-tool.tac --mock
 ```
 
-Right now, this is intentionally unsafe in one way: it “sends” without asking a human. Next chapter, we’ll talk about multi-turn loops; then we’ll add human-in-the-loop gates so the integration becomes trustworthy.
+Right now, this is intentionally unsafe in two ways:
+
+- It “sends” without asking a human.
+- It has no idempotency guard—so if you re-enter the send step, you could double-send.
+
+We’ll tackle these in order: make the integration retry-safe with state/idempotency, then add loops and HITL gates so it’s safe to run for real.
 
 ## How It Connects to the Running Example
 
@@ -99,4 +104,4 @@ We’re turning the recap draft into a workflow that can actually integrate with
 - The “send” tool is a stub (no side effects).
 - The draft is structured data (so the send step isn’t scraping text).
 
-Next, we’ll introduce the agent loop so we can iterate safely when the first draft isn’t good enough.
+Next, we’ll make this integration retry-safe by adding state, idempotency guards, and stages.

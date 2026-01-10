@@ -41,7 +41,7 @@ You can see this clearly even in a pure deterministic loop (excerpted from `code
     Log.info("Starting state management example")
 
     -- Initialize state
-    State.set("items_processed", 0)
+    state.items_processed = 0
 
     -- Process items and track count
     for i = 1, 5 do
@@ -50,7 +50,7 @@ You can see this clearly even in a pure deterministic loop (excerpted from `code
     end
 
     -- Retrieve final state
-    local final_count = State.get("items_processed")
+    local final_count = state.items_processed
     Log.info("Completed processing", {total = final_count})
 ```
 
@@ -68,7 +68,7 @@ Tactus automatically checkpoints these operations:
 | `Procedure.run()` | Sub-procedure inputs, outputs, and state |
 | `Model.predict()` | ML model inputs and outputs |
 
-State changes (`State.set`, `State.increment`) and log entries are also tracked, ensuring consistent replay.
+State changes (`state.*` assignment, `State.increment`) and log entries are also tracked, ensuring consistent replay.
 
 ## Human-in-the-Loop: Where Durability Shines
 
@@ -114,7 +114,7 @@ Procedure {
     Log.info("Starting state management example")
 
     -- Initialize state
-    State.set("items_processed", 0)
+    state.items_processed = 0
 
     -- Process items and track count
     for i = 1, 5 do
@@ -123,7 +123,7 @@ Procedure {
     end
 
     -- Retrieve final state
-    local final_count = State.get("items_processed")
+    local final_count = state.items_processed
     Log.info("Completed processing", {total = final_count})
 
     return {

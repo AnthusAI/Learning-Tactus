@@ -31,9 +31,9 @@ quarto render
 
 ## Book Structure
 
-- **Part I: Foundations** — What Tactus is, plus transparent durability and everything-as-code.
+- **Part I: Foundations** — What Tactus is, plus transparent durability, everything-as-code, and a quick install to run the examples.
 - **Part II: Build a Useful Agent** — A single running example, iteratively extended until it’s useful (including HITL).
-- **Part III: Reliability and Correctness at Scale** — State/idempotency, specs, and evaluations.
+- **Part III: Reliability and Correctness at Scale** — Behavior specs and evaluations.
 - **Part IV: Secure Execution at Scale** — Sandboxing, isolation boundaries, and secretless runtimes.
 - **Part V: Putting It Together** — Complete examples you can adapt.
 

@@ -2,6 +2,19 @@
 
 This document describes how the Learning Tactus book was created using AI agents.
 
+## Working Principles (Important)
+
+When you receive feedback or a change request, apply it in two passes:
+
+1. **Local pass**: make the requested change in the specific chapter/code the user mentioned.
+2. **Holistic pass**: step back and check whether the change should be threaded through the rest of the book for coherence (outline/TOC, part descriptions, chapter transitions, cross-references, code examples, and tests).
+
+In practice, that means:
+
+- If you move or rename chapters, update `_quarto.yml`, Part descriptions (preface/index), and any “next/previous chapter” prose.
+- If you change a DSL/API detail, fix both the narrative text and the runnable examples, and re-run `tactus test ... --mock` where relevant.
+- Prefer a smooth story arc over strict chapter-local perfection; Part II should read like one evolving workflow, not a set of disconnected docs pages.
+
 ## Tactus Reference Documentation
 
 When working on this book, consult these authoritative sources in the Tactus project:

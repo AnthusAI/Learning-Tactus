@@ -42,9 +42,9 @@ By the end of this book, you will:
 
 This book is designed to be read sequentially. Each chapter builds on the previous one.
 
-- **Part I** lays the foundations: what Tactus is, plus transparent durability and everything-as-code.
-- **Part II** builds a useful agent workflow by iteratively extending a single running example (including HITL).
-- **Part III** focuses on reliability and correctness: state/idempotency, specs, and evaluations.
+- **Part I** lays the foundations and gets you set up: what Tactus is, plus transparent durability, everything-as-code, and a quick install so you can run the examples.
+- **Part II** builds a useful agent workflow by iteratively extending a single running example: typed I/O, tools, state/idempotency, loops, and HITL.
+- **Part III** focuses on reliability and correctness at scale: behavior specs and evaluations.
 - **Part IV** focuses on secure execution and information security: sandboxing, isolation boundaries, and keeping secrets out of untrusted runtimes.
 - **Part V** ends with complete examples you can adapt.
 
@@ -57,7 +57,7 @@ Code examples are shown in blocks like this:
 ```lua
 -- Simple Agent Example
 
-done = tactus.done
+local done = require("tactus.tools.done")
 
 greeter = Agent {
     provider = "openai",

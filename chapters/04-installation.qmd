@@ -1,21 +1,25 @@
 # Installation and Setup
 
-Tactus is just a Python package with a CLI. Install it with `pip`, then start writing `.tac` files.
+Part I was about *why* Tactus exists. Now we’ll do the minimum setup so you can run the examples and start building a useful workflow in Part II.
+
+Tactus is a Python package with a CLI. You install it with `pip`, and you write workflows as `.tac` files (Lua syntax).
 
 ## What You'll Do
 
 - Install Tactus and verify the `tactus` CLI works
-- Run a first procedure with `tactus run`
+- Clone this book repo so you have the `code/` examples
 - Run a first spec with `tactus test --mock` (fast, no API key required)
-- Learn how this repo organizes runnable examples under `code/`
-- Set up provider credentials for “real runs” when you’re ready (optional for most chapters)
+- (Optional) install Docker for container sandboxing and dev/prod parity
+- Set up provider credentials for “real runs” when you’re ready
 
 ## Prerequisites
 
 - **Python 3.11+** (Tactus requires `>=3.11`)
 - A working `pip` (we’ll use `python -m pip ...` to avoid PATH surprises)
+- **Git** (to clone this book’s repo and run the examples)
+- **Docker (strongly encouraged)** if you want to run procedures the way they run in production (container isolation)
 
-## Install
+## Install Tactus
 
 If you’re using a virtual environment, activate it first.
 
@@ -36,11 +40,26 @@ You can also confirm the installed version:
 tactus version
 ```
 
-## Your First `.tac` File
+### About dependencies
+
+Tactus does not require you to install system packages up front. `pip` will install everything it needs (including a few packages with prebuilt wheels on most platforms).
+
+If `pip install tactus` fails because it’s trying to compile native dependencies, use Python 3.11/3.12, upgrade `pip`, and try again.
+
+## Get the Book Examples
+
+To run the exact examples from this book, clone the repo:
+
+```bash
+git clone https://github.com/AnthusAI/Learning-Tactus.git
+cd Learning-Tactus
+```
+
+All runnable examples live under `code/`.
+
+## Your First `.tac` Run (Fast, No API Key)
 
 Tactus procedures live in `.tac` files (Lua syntax). This repo already includes runnable examples under `code/`.
-
-### Fast sanity check (no API key)
 
 Run a spec in **mock mode**. This skips real LLM calls and uses `Mocks { ... }` blocks for deterministic, free tests:
 
@@ -50,7 +69,19 @@ tactus test code/chapter-01/04-basics-simple-agent.tac --mock
 
 If that passes, you’re ready for most of the book.
 
-### Real run (requires an API key)
+## Optional (Strongly Encouraged): Docker Sandbox
+
+Tactus can run procedures inside a fresh container so agent tool code can’t touch your host system. This becomes important as soon as you start giving agents filesystem and network tools.
+
+You’ll learn the details in Part IV. For now:
+
+- If you have Docker installed and running, you can check status with `tactus sandbox status`.
+- You can build the sandbox image with `tactus sandbox rebuild`.
+- You can run a procedure in the container sandbox by adding `--sandbox` to `tactus run ...`.
+
+If you don’t have Docker, you can still run Tactus locally without container isolation—but you won’t have dev/prod parity for the sandboxed execution model.
+
+## Real Runs (Requires a Provider Key)
 
 To actually run an agent against a model provider:
 

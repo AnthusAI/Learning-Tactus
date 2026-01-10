@@ -2,6 +2,8 @@
 
 This chapter is your hands-on starting point: define an agent, send it a message, and get a reliable, typed result back.
 
+If you haven’t installed Tactus yet (or cloned this book repo), do that first in the **Installation and Setup** chapter.
+
 By the end, you’ll have a small workflow that turns messy meeting notes into a draft recap email. It won’t be “production ready” yet—but it will be real, runnable, and it will establish the shape we’ll keep extending through Part II.
 
 ## The Running Example: A Meeting Recap Draft

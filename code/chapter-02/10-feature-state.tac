@@ -20,7 +20,7 @@ Procedure {
     Log.info("Starting state management example")
 
     -- Initialize state
-    State.set("items_processed", 0)
+    state.items_processed = 0
 
     -- Process items and track count
     for i = 1, 5 do
@@ -29,7 +29,7 @@ Procedure {
     end
 
     -- Retrieve final state
-    local final_count = State.get("items_processed")
+    local final_count = state.items_processed
     Log.info("Completed processing", {total = final_count})
 
     return {

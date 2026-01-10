@@ -2,6 +2,8 @@
 
 Most useful agents aren’t single-shot. They plan, act, check results, and sometimes need more turns. This chapter teaches multi-turn patterns without turning your code into a brittle “agent script.”
 
+In the last chapter, we made our workflow safe to integrate with the outside world: state, stages, and idempotency guards mean “retry” doesn’t imply “double-send.” Now we’ll address the other reason real workflows need multiple turns: **quality**.
+
 The goal is not “make the model try again until it looks good.” The goal is:
 
 - deterministic control flow
