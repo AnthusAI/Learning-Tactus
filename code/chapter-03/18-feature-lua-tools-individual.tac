@@ -12,15 +12,16 @@ tactus run examples/18-feature-lua-tools-individual.tac --param task="Calculate 
 -- Mock configuration for testing (only active in mock mode)
 Mocks {
     calculator = {
-        returns = {
-            response = "I'll calculate the 20% tip on $50. The tip is $10.00 and the total is $60.00.",
-            tool_calls = {"calculate_tip", "done"}
-        }
+        tool_calls = {
+            {tool = "calculate_tip", args = {bill_amount = "50", tip_percentage = "20"}},
+            {tool = "done", args = {reason = "Bill: $50.00, Tip (20%): $10.00, Total: $60.00"}}
+        },
+        message = "I'll calculate the 20% tip on $50."
     }
 }
 
 -- Define completion tool
-done = tactus.done
+local done = require("tactus.tools.done")
 
 -- Define individual tools using the Tool function
 calculate_tip = Tool {
@@ -112,9 +113,10 @@ Procedure {
     -- Get final result
     local answer
     if done.called() then
-        answer = done.last_result() or "Task completed"
+        local call = done.last_call()
+        answer = (call and call.args and call.args.reason) or "Task completed"
     else
-        answer = result.text
+        answer = result.message or ""
     end
 
     return {
@@ -137,5 +139,5 @@ Feature: Individual Lua Function Tools
     And the calculate_tip tool should be called
     And the calculate_tip tool should be called with bill_amount=50
     And the calculate_tip tool should be called with tip_percentage=20
-    And the output result should be similar to "$10.00"
+    And the output result should match pattern "\$10\.00"
 ]])

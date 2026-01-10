@@ -2,7 +2,7 @@
 -- Demonstrates basic static mocking where tools always return the same value
 
 -- Tool definitions
-done = tactus.done
+local done = require("tactus.tools.done")
 
 -- Define the tools we'll mock (with dummy handlers since they'll be mocked)
 weather = Tool {

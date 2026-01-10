@@ -2,18 +2,137 @@
 
 This is the “language basics” chapter: how Tactus procedures take inputs, return typed outputs, and fail fast when inputs don’t match what you expect.
 
-## This Chapter Will Cover
+In the last chapter, we wrote a first useful agent: “take messy notes, draft a recap email.” Now we’re going to make that workflow *solid*—by giving it a clear input contract and a clear output contract.
 
-- The two common styles you’ll see in this book:
-  - Script-style procedures with top-level `input { ... }` / `output { ... }`
-  - `Procedure { ... }` blocks (when you want explicit procedure configuration)
-- Defining inputs: required fields, defaults, and descriptions (`field.string`, `field.number`, `field.boolean`, etc.)
-- Defining outputs: structured results, validation, and “return tables”
-- Parameters vs inputs (`--param key=value` vs `input { ... }`)
-- Practical error handling patterns (use `assert(...)` / `error(...)` to fail loudly)
+## Procedures Are the Unit of Durable Execution
+
+In Tactus, **procedures** are what the runtime runs, checkpoints, pauses, and resumes. You can think of a procedure as:
+
+- An input schema
+- Some deterministic orchestration code
+- Optional agent calls and tool calls
+- An output schema
+
+Everything you build in Part II is a procedure. In this book, we’ll usually write `Procedure { ... }` explicitly so the entry point is unambiguous and the examples stay easy to test.
+
+## Two Styles: Script Mode vs `Procedure { ... }`
+
+You’ll see two equivalent styles throughout the book.
+
+### 1) Script mode (lightweight syntax)
+
+For simple workflows, you can write:
+
+- `input { ... }`
+- `output { ... }`
+- then regular Lua code
+
+That’s script mode. It’s great for tiny examples and quick experiments. For agentic workflows, explicit `Procedure { ... }` blocks tend to be clearer (and play best with tooling), so that’s what we’ll use for most of Part II.
+
+### 2) Explicit `Procedure { ... }`
+
+When you want more explicit configuration (or you’re building something that will grow), write the wrapper yourself:
+
+```lua
+Procedure {
+  input = { ... },
+  output = { ... },
+  function(input)
+    -- orchestration code
+    return { ... }
+  end
+}
+```
+
+Both compile down to the same thing. Choose the one that reads best for the procedure you’re writing.
+
+## Inputs: Make “What This Needs” Explicit
+
+Inputs are validated *before* your procedure runs. That means:
+
+- Missing required fields fail fast.
+- Values arrive with predictable types.
+- You can read the procedure definition and understand how to call it.
+
+Field builders cover the basic shapes:
+
+- `field.string{...}`
+- `field.number{...}`
+- `field.integer{...}`
+- `field.boolean{...}`
+- `field.array{...}`
+- `field.object{...}`
+
+In script mode, the schema lives in a top-level `input { ... }` block, and values are available as `input.<field>`. In an explicit procedure, the function receives an `input` table argument (same fields, same types).
+
+On the CLI, you pass values with `--param key=value`.
+
+## Outputs: Make “What This Returns” Explicit
+
+Outputs are validated *after* your procedure returns. When you define `output`, the runtime checks:
+
+1. Required fields exist.
+2. Types match.
+3. Only declared fields are returned (extra fields are stripped).
+
+This is the fastest way to stop agent workflows from becoming “stringly typed” spaghetti.
+
+## Refactor the Recap Draft Into Structured Output
+
+In `code/chapter-06/20-meeting-recap-draft.tac`, our “draft” is one big string. That’s fine for a demo, but it’s awkward to build on:
+
+- How do we show a preview UI with separate subject/body?
+- How do we store action items?
+- How do we reliably feed the draft into a send step?
+
+The fix is to return structured data.
+
+The example for this chapter is `code/chapter-05/20-meeting-recap-structured-output.tac`. It uses two layers of “typing”:
+
+- A **procedure output schema** (what callers get back)
+- A **tool input schema** (what the agent must provide)
+
+Instead of scraping a blob of text, we give the agent a single “finalize” tool (`finalize_recap`) that takes `subject`, `body`, and `action_items`. The procedure then returns those fields directly from the tool call arguments.
+
+Run it:
+
+```bash
+tactus run code/chapter-05/20-meeting-recap-structured-output.tac \
+  --param recipient_name="Sam" \
+  --param raw_notes="Discussed Q1 launch timeline. Risks: vendor delays. Action: Sam to confirm dates by Friday."
+```
+
+And test it in mock mode:
+
+```bash
+tactus test code/chapter-05/20-meeting-recap-structured-output.tac --mock
+```
+
+## Parameters vs Inputs
+
+You’ll sometimes see “parameters” used informally to mean “values I pass on the CLI.” In Tactus:
+
+- `input { ... }` / `Procedure { input = ... }` defines the schema.
+- `--param key=value` provides input values that are validated against that schema.
+
+In other words: **inputs are declared in code; parameters are how you supply them at runtime**.
+
+## Failing Fast (On Purpose)
+
+When an assumption must hold, say so in code:
+
+- `assert(condition, "message")` to enforce invariants
+- `error("message")` to fail loudly with a clear reason
+
+This is especially important in agent workflows. Don’t silently limp forward with half-valid data.
 
 ## How It Connects to the Running Example
 
-We’ll revisit the meeting-recap workflow from Part II and give it a clean, typed contract (inputs like “raw notes” and “recipient”, outputs like “draft subject/body”, and later “message_id”).
+We now have a recap workflow with an actual contract:
+
+- **Inputs:** `raw_notes`, `recipient_name`
+- **Outputs:** `subject`, `body`, `action_items`
+
+In the next chapter, we’ll introduce tools and add the first “real-world integration”: a safe, stubbed email send step.
 
 *Related examples:* `code/chapter-05/02-basics-simple-logic.tac`, `code/chapter-05/70-mocking-static.tac`

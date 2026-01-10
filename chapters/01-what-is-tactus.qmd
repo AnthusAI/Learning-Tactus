@@ -101,13 +101,13 @@ If you've written code in Python, JavaScript, or any similar language, you're re
 
 ## How Is This Book Organized?
 
-**Part I: Getting Started** gets you running: installation, configuration, and your first agent.
+**Part I: Foundations** explains what Tactus is and the two design choices that make it different: transparent durability and everything-as-code.
 
-**Part II: A Workflow You Can Grow** introduces Tactus’s differentiators the practical way: we’ll start with a small “meeting recap” workflow and layer on tools, human approval before sending emails, durability, and behavior specs.
+**Part II: Build a Useful Agent** walks through a single running example that we keep extending until it’s genuinely useful.
 
-**Part III: Core Patterns** goes deeper on the building blocks you’ll reuse everywhere: typed inputs/outputs, state, and safe multi-turn orchestration.
+**Part III: Reliability and Correctness at Scale** adds the testing and engineering patterns you need to trust the workflow unattended.
 
-**Part IV: Testing and Reliability** covers step definitions, mocking patterns, and evaluations—so you can measure “how often does it work?” instead of hoping.
+**Part IV: Secure Execution at Scale** focuses on information security: sandboxing, isolation boundaries, and keeping secrets out of untrusted runtimes.
 
 **Part V: Putting It Together** ends with complete examples you can adapt to your own projects.
 
@@ -122,4 +122,4 @@ Before moving on, make sure you can run Tactus:
 
 If you see output with a greeting, you're ready to continue.
 
-In the next chapter, you’ll define your first agent and start building a small workflow we’ll grow throughout the book.
+In the next chapter, we’ll dive into **transparent durability**—how Tactus checkpoints workflows so they can pause, crash, and resume without losing their place.

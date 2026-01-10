@@ -2,14 +2,111 @@
 
 Most useful agents aren’t single-shot. They plan, act, check results, and sometimes need more turns. This chapter teaches multi-turn patterns without turning your code into a brittle “agent script.”
 
-## This Chapter Will Cover
+The goal is not “make the model try again until it looks good.” The goal is:
 
-- When you actually need a loop (and when you don’t)
-- Safe loop shapes (max turns, explicit stage progression, deterministic exits)
-- Logging with `Log.info/warn/error` so replays are legible
-- Per-turn tool control (enable a dangerous tool only when the workflow is ready)
-- Common failure modes: loops that never finish, tools called too early, “agent drift”
+- deterministic control flow
+- bounded retries
+- explicit success criteria
+- legible traces when you have to debug
 
-## How It Connects to the Running Example
+## When You Need a Loop (and When You Don’t)
 
-We’ll keep the recap workflow mostly single-turn, but we’ll use a small loop to demonstrate how to iterate safely when the agent’s first draft isn’t good enough.
+You need a loop when:
+
+- The agent must **iteratively improve** an artifact (drafts, plans, code).
+- You have **tool-using** behavior and need multiple turns.
+- You have **checks** that can fail (validation, policy checks, completeness rules).
+
+You don’t need a loop when:
+
+- A single, typed output is enough (especially with structured output + validation).
+- The work is deterministic and can be done with tools directly.
+
+In Part II, we’ll use a loop for a very common reason: **the first draft is often not the final draft**.
+
+## The Safe Loop Shape
+
+The safe loop has three properties:
+
+1. **A hard cap** (`max_turns`, `max_attempts`)
+2. **An explicit success condition** (“we’re done when X is true”)
+3. **A deterministic exit** (either success or a clear failure)
+
+In Lua, that usually looks like:
+
+```lua
+local max_attempts = 3
+local attempt = 0
+
+while attempt < max_attempts do
+  attempt = attempt + 1
+
+  -- take a turn (agent call, tool call, etc.)
+
+  if success then
+    break
+  end
+end
+
+assert(success, "Failed to produce an acceptable result after " .. max_attempts .. " attempts")
+```
+
+## Make Replays Legible With Logs
+
+Durable execution is only useful if you can understand what happened. Log the *shape* of your loop:
+
+- which attempt you’re on
+- what failed the check
+- what you’re asking the model to fix
+
+Use `Log.info`, `Log.warn`, and `Log.error` with structured metadata so traces stay readable.
+
+## Per-Turn Tool Control (Preview)
+
+When you call an agent, you can override which tools are available *for that call*:
+
+```lua
+worker({tools = {}})           -- no tools this turn
+worker({tools = {search, done}}) -- only these tools
+```
+
+This is one of the simplest ways to prevent “tool drift”: you only enable tools when the workflow is ready for them.
+
+We’ll use this in the next chapter when we add human approval gates.
+
+## Example: Iterate Until the Draft Passes Checks
+
+The example for this chapter is `code/chapter-09/40-meeting-recap-quality-loop.tac`.
+
+It runs the recap agent, then applies a few deterministic checks like:
+
+- subject is non-empty and not too long
+- body is long enough to be useful
+- action items are present when the notes include obvious actions
+
+If a check fails, the procedure gives the agent targeted feedback and tries again—up to a max attempt count.
+
+Run it:
+
+```bash
+tactus run code/chapter-09/40-meeting-recap-quality-loop.tac \
+  --param recipient_name="Sam" \
+  --param raw_notes="Discussed Q1 launch timeline. Risks: vendor delays. Action: Sam to confirm dates by Friday."
+```
+
+And test it in mock mode:
+
+```bash
+tactus test code/chapter-09/40-meeting-recap-quality-loop.tac --mock
+```
+
+## Common Failure Modes (and Fixes)
+
+- **Infinite loops**: always cap attempts and assert on failure.
+- **Vague retry prompts**: tell the model exactly what failed (“Subject must be under 80 chars”).
+- **Mixing responsibilities**: keep “draft” and “send” separate; loop on draft quality, not on tool calls.
+- **Silent degradation**: if you’re accepting “good enough,” encode that in the checks so it’s explicit.
+
+## Looking Ahead
+
+We can now iterate safely and deterministically. The last missing piece for a trustworthy workflow is human-in-the-loop: approvals, reviews, and input requests as durable checkpoints.

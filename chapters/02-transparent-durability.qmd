@@ -1,6 +1,6 @@
 # Transparent Durability
 
-In the last chapter, we introduced human-in-the-loop as a first-class primitive—approvals and reviews that can pause a workflow. That only works if your procedure can stop for minutes or days and then resume correctly.
+Human-in-the-loop makes workflows pause for real humans. Multi-turn agents can take minutes. Some procedures run overnight. That only works if your procedure can stop for minutes or days and then resume correctly.
 
 That’s what *transparent durability* is for. You write normal imperative code, and the runtime checkpoints every agent turn, tool call, and human interaction so your workflow never loses its place.
 
@@ -185,6 +185,4 @@ Tactus does all of this automatically. You focus on your agent's behavior; the r
 
 ## Looking Ahead
 
-You now understand *what* transparent durability does and *why* it matters. In the next chapter, we'll explore another key Tactus design principle: **everything as code**.
-
-When an agent's entire definition—prompts, tools, orchestration, and tests—lives in a single readable file, interesting things become possible. Including agents that improve themselves.
+You now understand *what* transparent durability does and *why* it matters. In the next chapter, we’ll explore another key design principle: **everything as code**—keeping prompts, tools, orchestration, and tests together as a readable artifact.

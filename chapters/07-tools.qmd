@@ -2,15 +2,101 @@
 
 Tools are how your agent affects the world: write files, call APIs, query databases, and integrate with other systems. This chapter introduces tools in a way that stays safe and reproducible.
 
-## This Chapter Will Cover
+The key idea is simple: **an agent shouldn’t have “magic powers.”** It should have a small set of explicit capabilities, each with a clear schema and a deterministic implementation.
 
-- Why “tools” are the right abstraction (capabilities, not callbacks)
-- Defining a tool inline: `name = Tool { description = "...", input = { ... }, function(args) ... end }`
-- Designing tool schemas that are hard to misuse (types + clear field descriptions)
-- Tool return values and how agents should interpret them
-- Tool tracking and inspection (`Tool.called(...)`, `tool.called()`, `tool.last_call()`, `tool.last_result()`)
-- A practical safety pattern: **give the agent only the tools it should be allowed to use right now**
+## Tools Are Capabilities, Not Callbacks
+
+In many agent frameworks, “tools” are just arbitrary functions you register, and you hope the model calls them correctly. In Tactus, tools are designed to be:
+
+- **Schema-first** (typed inputs, clear descriptions)
+- **Inspectable** (you can see what was called and with what arguments)
+- **Controllable** (you decide which tools exist, and when they’re available)
+
+This makes tools the right abstraction for production work: they’re composable building blocks, not a grab bag of side effects.
+
+## Defining a Tool
+
+A Lua function tool is defined like this:
+
+```lua
+send_email = Tool {
+  description = "Send an email (stubbed in this repo)",
+  input = {
+    to = field.string{required = true, description = "Recipient email address"},
+    subject = field.string{required = true, description = "Email subject"},
+    body = field.string{required = true, description = "Email body"},
+  },
+  function(args)
+    -- In a real system: call your email provider API here.
+    -- In this book repo: return a fake id so examples have no side effects.
+    return {message_id = "msg_12345"}
+  end
+}
+```
+
+Two things to notice:
+
+- The tool input schema is explicit.
+- The tool body is deterministic Lua code. You can test it like any other code.
+
+## Tool Return Values
+
+Tools should return values that are easy for the rest of your workflow to consume.
+
+In practice that usually means returning a table (object) with named fields like `{message_id = "...", status = "queued"}` rather than a blob of text.
+
+## Inspecting Tool Calls
+
+Tactus tracks tool usage so you can reason about behavior:
+
+- `send_email.called()` — whether the tool was called
+- `send_email.last_call()` — arguments of the last call
+- `send_email.last_result()` — result of the last call
+- `Tool.called("send_email")` — string-based lookup (useful in generic code and tests)
+
+This is what makes tool use testable.
+
+## Safety Pattern: Don’t Hand the Agent a Loaded Gun
+
+Even if you define a tool, you don’t have to give it to the agent.
+
+Two common safe patterns:
+
+1. **Agent generates; code executes.** The agent drafts content, and your deterministic code calls the dangerous tool (send, deploy, delete) only after checks/approval.
+2. **Per-turn tool control.** Keep the tool defined, but only enable it for the specific turn where you want it available.
+
+We’ll use both patterns in Part II.
+
+## Add a Safe “Send Email” Integration
+
+The example for this chapter is `code/chapter-07/30-meeting-recap-send-tool.tac`. It:
+
+1. Produces a structured recap draft (`subject`, `body`, `action_items`)
+2. Calls `send_email(...)` as a stub
+3. Returns a `message_id`
+
+Run it:
+
+```bash
+tactus run code/chapter-07/30-meeting-recap-send-tool.tac \
+  --param recipient_name="Sam" \
+  --param recipient_email="sam@example.com" \
+  --param raw_notes="Discussed Q1 launch timeline. Risks: vendor delays. Action: Sam to confirm dates by Friday."
+```
+
+And test it in mock mode:
+
+```bash
+tactus test code/chapter-07/30-meeting-recap-send-tool.tac --mock
+```
+
+Right now, this is intentionally unsafe in one way: it “sends” without asking a human. Next chapter, we’ll talk about multi-turn loops; then we’ll add human-in-the-loop gates so the integration becomes trustworthy.
 
 ## How It Connects to the Running Example
 
-We’ll add a “send email” tool, implemented as a harmless stub (it logs what it would send and returns a fake `message_id`). That lets us teach tool calling without actually emailing anyone.
+We’re turning the recap draft into a workflow that can actually integrate with the outside world—but in a way that stays reproducible:
+
+- The “send” tool is a stub (no side effects).
+- The draft is structured data (so the send step isn’t scraping text).
+
+Next, we’ll introduce the agent loop so we can iterate safely when the first draft isn’t good enough.

@@ -42,11 +42,11 @@ By the end of this book, you will:
 
 This book is designed to be read sequentially. Each chapter builds on the previous one.
 
-- **Part I** gets you running: installation, configuration, and your first agent.
-- **Part II** grows one small workflow into a real system: tools, human approvals, durability, and specs.
-- **Part III** deepens the core patterns you’ll reuse everywhere: inputs/outputs, state, and agent loops.
-- **Part IV** focuses on reliability: step definitions, mocking, and evaluations.
-- **Part V** ties everything together with complete, real-world examples.
+- **Part I** lays the foundations: what Tactus is, plus transparent durability and everything-as-code.
+- **Part II** builds a useful agent workflow by iteratively extending a single running example (including HITL).
+- **Part III** focuses on reliability and correctness: state/idempotency, specs, and evaluations.
+- **Part IV** focuses on secure execution and information security: sandboxing, isolation boundaries, and keeping secrets out of untrusted runtimes.
+- **Part V** ends with complete examples you can adapt.
 
 Every code example in this book is a runnable `.tac` file. You can find them in the `code/` directory, organized by chapter.
 

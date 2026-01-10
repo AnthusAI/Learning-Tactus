@@ -1,0 +1,30 @@
+# Secure Sandboxing and Threat Models
+
+Agent workflows fail in two broad ways:
+
+- **They do the wrong thing** (reliability).
+- **They do a dangerous thing** (security).
+
+This chapter is about the second category: how to reason about *what could go wrong* and how Tactus’s sandboxing model helps you build more secure systems.
+
+## This Chapter Will Cover
+
+- The capability model: **default deny** (no filesystem, network, or env access) and **tools as explicit capabilities**
+- The difference between *untrusted orchestration code* (`.tac`) and *trusted capabilities* (tools you choose to provide)
+- Prompt injection as a security problem (and why “just prompt it better” isn’t a defense)
+- Guardrails you can enforce in code:
+  - schema validation at tool boundaries
+  - least-privilege tool lists that change by stage
+  - human approval gates before irreversible actions
+- Multi-tenant boundaries (high level): isolating workspaces, state, logs, and tool access between users
+- What “secure by default” means in practice (and what it does *not* mean)
+
+## How It Connects to the Running Example
+
+We’ll take the meeting-recap workflow and write down an explicit threat model:
+
+- The agent should never be able to read secrets from the environment or filesystem.
+- The agent should not be able to send an email without a human approval gate.
+- Tool access should be staged: drafting tools first, “send” tools only after approval.
+
+Then we’ll map those threats to concrete Tactus patterns you can apply consistently.

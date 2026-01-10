@@ -1,0 +1,30 @@
+# Secure Brokers and Tool Runners
+
+The Lua sandbox is one layer of defense: it makes `.tac` code secure to run in-process by default. But production systems often need *stronger isolation boundaries*—especially around secrets and network access.
+
+This chapter introduces a practical deployment mindset: treat your agent runtime as **untrusted**, keep it **secretless**, and broker privileged capabilities (model calls, credentialed tools) through narrow interfaces.
+
+## This Chapter Will Cover
+
+- Why “secretless by default” changes the security game (there’s nothing to steal)
+- A common architecture shape:
+  - a runtime process/container that runs `.tac` code + checkpoints
+  - a trusted broker process that holds credentials and performs privileged operations
+  - tool runners that execute tools in different trust zones
+- Three useful “tool runner” modes (conceptually):
+  - **sandbox**: run tool code alongside the runtime (no secrets)
+  - **isolated**: run tool code in a separate container (secrets allowed)
+  - **host**: run tool code on the host (explicitly trusted)
+- Keeping I/O simple across runners: workspace mounts, relative paths, and consistent working directories
+- Streaming and observability: preserving streaming responses while still enforcing boundaries
+- Deployment tradeoffs: per-run isolation vs pooled workers, and what changes in multi-tenant environments
+
+## How It Connects to the Running Example
+
+We’ll revisit the “send recap email” step and show how you would deploy it safely:
+
+- The runtime runs without outbound network access and without provider/email credentials.
+- The model API call is performed by a broker that owns the provider key.
+- The email tool runs in an isolated runner that has SMTP/API credentials, and is only reachable through the tool interface.
+
+The workflow stays the same at the `.tac` level—you’re changing the *execution boundaries*, not rewriting the agent logic.

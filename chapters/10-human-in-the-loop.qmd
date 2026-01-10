@@ -2,16 +2,77 @@
 
 Human-in-the-loop (HITL) is where agent workflows stop being “cool demos” and start being trustworthy systems. This chapter introduces approvals and reviews as *language primitives*.
 
-## This Chapter Will Cover
+Now that you’ve seen how to structure an agent loop, HITL becomes a practical pattern: gate the risky step, collect missing inputs, and resume the workflow exactly where it left off.
 
-- The three primitives you’ll use constantly:
-  - `Human.review(...)` for reviewing an artifact (like a draft email)
-  - `Human.approve(...)` for a yes/no gate before a risky action
-  - `Human.input(...)` for missing information the agent shouldn’t guess
-- Timeouts, defaults, and `on_timeout="error"` (what “fail safe” looks like)
-- How HITL works across environments (CLI, IDE, embedded applications)
-- The key promise: HITL waits are durable — you can stop the process and resume later
+## The HITL Primitives
 
-## How It Connects to the Running Example
+Tactus includes three blocking primitives you’ll use constantly:
 
-We’ll add the obvious safety gate: **a human must approve before any email is sent**. The email tool remains a stub in this repo, but the workflow shape is the same as a real system.
+- `Human.review({ ... })` — review an artifact (text, code, config) and optionally edit it
+- `Human.approve({ ... })` — yes/no gate before a risky action
+- `Human.input({ ... })` — request missing information the workflow shouldn’t guess
+
+Each is a **durable suspend point**. When execution reaches one of these calls, the runtime:
+
+1. Checkpoints everything up to that point
+2. Emits a pending request to the human UI/handler
+3. Suspends execution
+4. Resumes later (even in a new process) when the human responds
+
+That’s the difference between “agent scripts” and real workflows: you don’t keep a Python process running for 14 hours waiting for someone to click “Approve.”
+
+## Timeouts and “Fail Safe”
+
+All blocking HITL calls can be configured with timeouts and defaults:
+
+- `timeout = 3600` (seconds) to stop waiting eventually
+- `default = false` (or a default string, etc.) to pick a safe fallback
+
+For risky actions, the safe default is almost always “don’t proceed.”
+
+## Example: Review the Draft, Then Approve Sending
+
+The example for this chapter is `code/chapter-10/50-meeting-recap-hitl-send.tac`.
+
+It follows a workflow shape you can reuse almost anywhere:
+
+1. Generate a structured draft (`subject`, `body`, `action_items`)
+2. `Human.review(...)` the draft (human can approve, reject, or revise)
+3. If revised, incorporate edits (or re-run the agent with feedback)
+4. `Human.approve(...)` before calling the send tool
+5. Call `send_email(...)` (stubbed here) and return `message_id`
+
+Run it:
+
+```bash
+tactus run code/chapter-10/50-meeting-recap-hitl-send.tac \
+  --param recipient_name="Sam" \
+  --param recipient_email="sam@example.com" \
+  --param raw_notes="Discussed Q1 launch timeline. Risks: vendor delays. Action: Sam to confirm dates by Friday."
+```
+
+In mock mode, HITL is automatically answered so tests can run without blocking:
+
+```bash
+tactus test code/chapter-10/50-meeting-recap-hitl-send.tac --mock
+```
+
+## How HITL Shows Up in Different Environments
+
+The same Lua code can run with different HITL handlers:
+
+- **CLI**: prompts in the terminal
+- **IDE / desktop app**: modal dialogs or inbox-style pending requests
+- **Embedded platform**: web UI, Slack, email, or your own integration
+
+The procedure doesn’t change. That portability is the point.
+
+## Where This Takes Us
+
+At this point in Part II, our workflow is:
+
+- Useful (draft + send integration)
+- Bounded and deterministic (safe loop shape)
+- Trustworthy (human gates before risky actions)
+
+Next, Parts III and IV are about making this scale: correctness, idempotency, testing, and security boundaries.

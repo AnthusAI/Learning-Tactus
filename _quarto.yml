@@ -13,32 +13,34 @@ book:
     - index.qmd
     - chapters/00-preface.qmd
     - chapters/00-introduction.qmd
-    - part: "Part I: Getting Started"
+    - part: "Part I: Foundations"
       chapters:
-        - chapters/04-installation.qmd
         - chapters/01-what-is-tactus.qmd
-        - chapters/06-your-first-agent.qmd
-    - part: "Part II: A Workflow You Can Grow"
-      chapters:
-        - chapters/07-tools.qmd
-        - chapters/10-human-in-the-loop.qmd
         - chapters/02-transparent-durability.qmd
         - chapters/03-everything-as-code.qmd
-        - chapters/11-behavior-specifications.qmd
-    - part: "Part III: Core Patterns"
+    - part: "Part II: Build a Useful Agent"
       chapters:
+        - chapters/04-installation.qmd
+        - chapters/06-your-first-agent.qmd
         - chapters/05-procedures-and-outputs.qmd
-        - chapters/08-state-management.qmd
+        - chapters/07-tools.qmd
         - chapters/09-the-agent-loop.qmd
-    - part: "Part IV: Testing and Reliability"
+        - chapters/10-human-in-the-loop.qmd
+    - part: "Part III: Reliability and Correctness at Scale"
       chapters:
+        - chapters/08-state-management.qmd
+        - chapters/11-behavior-specifications.qmd
         - chapters/12-built-in-steps.qmd
         - chapters/13-evaluations.qmd
+    - part: "Part IV: Secure Execution at Scale"
+      chapters:
+        - chapters/14-sandboxing-and-threat-models.qmd
+        - chapters/15-brokers-and-tool-runners.qmd
     - part: "Part V: Putting It Together"
       chapters:
-        - chapters/14-example-research-assistant.qmd
-        - chapters/15-example-document-processor.qmd
-        - chapters/16-where-to-go.qmd
+        - chapters/16-example-research-assistant.qmd
+        - chapters/17-example-document-processor.qmd
+        - chapters/18-where-to-go.qmd
 
 format:
   html:

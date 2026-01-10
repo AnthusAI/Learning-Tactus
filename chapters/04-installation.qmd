@@ -30,6 +30,12 @@ Verify the CLI is on your PATH:
 tactus --help
 ```
 
+You can also confirm the installed version:
+
+```bash
+tactus version
+```
+
 ## Your First `.tac` File
 
 Tactus procedures live in `.tac` files (Lua syntax). This repo already includes runnable examples under `code/`.

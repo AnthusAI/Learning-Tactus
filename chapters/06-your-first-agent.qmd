@@ -2,20 +2,83 @@
 
 This chapter is your hands-on starting point: define an agent, send it a message, and get a reliable, typed result back.
 
-## This Chapter Will Cover
+By the end, you’ll have a small workflow that turns messy meeting notes into a draft recap email. It won’t be “production ready” yet—but it will be real, runnable, and it will establish the shape we’ll keep extending through Part II.
 
-- The `Agent { ... }` declaration syntax and the “callable agent” model
-- Providers and models (enough to get running; not an exhaustive survey)
-- Writing system prompts that support deterministic orchestration
-- Single-turn calls vs multi-turn conversations (we’ll keep it single-turn for now)
-- Extracting useful results from the agent response
+## The Running Example: A Meeting Recap Draft
 
-## The Running Example Starts Here
+Most people’s first useful agent isn’t “research the web” or “plan a vacation.” It’s something boring and recurring:
 
-We’ll begin a simple workflow we can grow through Part II:
+- Someone pastes messy notes (a transcript, a rough outline, a set of bullets).
+- You want a clean recap email.
+- You want the workflow to be safe (no accidental sends) and reliable (no fragile scripts).
 
-1. Take a messy `raw_notes` string (meeting notes, a chat transcript, or a pasted doc excerpt)
-2. Have an agent produce a draft recap email (subject + body + action items)
-3. Later, add tools + human approval before any “send” step
+We’ll start with the simplest useful version: **draft the email**.
 
-*Warm-up example:* `code/chapter-01/04-basics-simple-agent.tac`
+## What an `Agent { ... }` Is (and Isn’t)
+
+In Tactus, an agent is a configured LLM “worker”:
+
+- It has a **provider** and **model**
+- It has a **system prompt** (and optional initial message)
+- It may have **tools**
+- You invoke it with callable syntax: `recapper()` or `recapper({message = "..."})`
+
+An agent is not your control flow. You still write the loop, the branching, the checks, and the safety gates in deterministic Lua code. That split is the whole point: **use intelligence where it helps, use code where it must be correct**.
+
+## A Minimal Drafting Agent
+
+The example file for this chapter is `code/chapter-06/20-meeting-recap-draft.tac`. It:
+
+- Accepts a `raw_notes` input string
+- Calls a `recapper` agent once
+- Returns a single `draft` string (subject + body in plain text)
+
+Run it (real model call):
+
+```bash
+tactus run code/chapter-06/20-meeting-recap-draft.tac \
+  --param recipient_name="Sam" \
+  --param raw_notes="Discussed Q1 launch timeline. Risks: vendor delays. Action: Sam to confirm dates by Friday."
+```
+
+You should get output shaped like:
+
+```text
+{"draft": "..."}
+```
+
+### Mock run (fast, deterministic)
+
+You can also test the file in mock mode:
+
+```bash
+tactus test code/chapter-06/20-meeting-recap-draft.tac --mock
+```
+
+Mock mode is how this book keeps examples runnable without requiring API keys or network calls.
+
+## Providers, Models, and “Good Defaults”
+
+For Part II we’ll keep provider/model choices conservative:
+
+- Use a capable, low-latency model (for example `gpt-4o-mini`)
+- Keep temperature low for business writing (so drafts are stable)
+
+You can override model settings per agent (or even per call), but don’t reach for that until you have a workflow shape you like. Prompt clarity and output validation usually buy you more reliability than tweaking temperature.
+
+## Prompts That Support Orchestration
+
+When you’re using an LLM inside a deterministic workflow, a “good prompt” is less about being poetic and more about being *operational*:
+
+- State the goal and the audience.
+- Constrain format (what fields/sections exist).
+- Say what to do when information is missing (don’t invent; mark as “TBD” or ask later).
+- Keep the agent’s job narrow. (Drafting is one job; sending is another.)
+
+In the next chapter, we’ll tighten this further by making the agent return structured data instead of free-form text.
+
+## Looking Ahead
+
+Right now, our output is “typed” only in the simplest sense: it’s a string. That’s enough to get momentum, but not enough to build reliably on top of it.
+
+Next up: **procedures and outputs**—how to give this workflow a clear input contract and a structured output contract, so downstream steps don’t have to scrape text.
