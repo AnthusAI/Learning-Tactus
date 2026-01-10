@@ -105,7 +105,7 @@ If you've written code in Python, JavaScript, or any similar language, you're re
 
 **Part II: Build a Useful Agent** walks through a single running example that we keep extending until it’s genuinely useful.
 
-**Part III: Guardrails (Safety + InfoSec)** is about putting real boundaries around powerful agents: capability control, sandboxing, isolation, and secretless execution.
+**Part III: Guardrails (Safety + InfoSec)** starts by naming the levers of control you have in an agent system (beyond prompts), then puts real boundaries around powerful agents: capability control, sandboxing, isolation, and secretless execution.
 
 **Part IV: Reliability and Correctness at Scale** adds the testing and engineering patterns you need to trust the workflow unattended.
 

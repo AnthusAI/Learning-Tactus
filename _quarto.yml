@@ -29,19 +29,20 @@ book:
         - chapters/10-human-in-the-loop.qmd
     - part: "Part III: Guardrails (Safety + InfoSec)"
       chapters:
-        - chapters/14-sandboxing-and-threat-models.qmd
-        - chapters/15-brokers-and-tool-runners.qmd
-        - chapters/16-secretless-execution.qmd
+        - chapters/11-levers-of-control.qmd
+        - chapters/12-threat-modeling-and-guardrails.qmd
+        - chapters/13-sandboxing-layers-lua-vm-and-containers.qmd
+        - chapters/14-secretless-execution.qmd
     - part: "Part IV: Reliability and Correctness at Scale"
       chapters:
-        - chapters/11-behavior-specifications.qmd
-        - chapters/12-built-in-steps.qmd
-        - chapters/13-evaluations.qmd
+        - chapters/15-behavior-specifications.qmd
+        - chapters/16-built-in-steps.qmd
+        - chapters/17-evaluations.qmd
     - part: "Part V: Putting It Together"
       chapters:
-        - chapters/17-example-research-assistant.qmd
-        - chapters/18-example-document-processor.qmd
-        - chapters/19-where-to-go.qmd
+        - chapters/18-example-research-assistant.qmd
+        - chapters/19-example-document-processor.qmd
+        - chapters/20-where-to-go.qmd
 
 format:
   html:

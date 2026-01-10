@@ -73,7 +73,7 @@ If that passes, you’re ready for most of the book.
 
 Tactus can run procedures inside a fresh container so agent tool code can’t touch your host system. This becomes important as soon as you start giving agents filesystem and network tools.
 
-You’ll learn the details in Part III. For now:
+You’ll learn the details in Part III (including a control-surface view of why isolation matters). For now:
 
 - If you have Docker installed and running, you can check status with `tactus sandbox status`.
 - You can build the sandbox image with `tactus sandbox rebuild`.

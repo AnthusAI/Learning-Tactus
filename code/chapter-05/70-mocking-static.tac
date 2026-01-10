@@ -42,22 +42,50 @@ Mocks {
             price = 150.25,
             change = 2.5
         }
+    },
+
+    -- Agent mocks (required in mock mode): drive deterministic tool usage
+    weather_agent = {
+        tool_calls = {
+            {tool = "weather", args = {location = "San Francisco"}},
+            {tool = "done", args = {reason = "Weather in San Francisco: 72F and Sunny"}}
+        },
+        message = "Completed weather lookup"
+    },
+    stock_agent = {
+        tool_calls = {
+            {tool = "stock_price", args = {symbol = "AAPL"}},
+            {tool = "done", args = {reason = "AAPL: $150.25 (+2.5)"}}
+        },
+        message = "Completed stock lookup"
     }
 }
 
--- Agent that uses mocked tools
-info_gatherer = Agent {
+-- Agents that use mocked tools
+weather_agent = Agent {
     provider = "openai",
     model = "gpt-4o-mini",
     system_prompt = [[You are an information gathering assistant.
 
 You have access to these tools:
 - weather: Get current weather information
+- done: Signal completion
+
+When asked for information, use the appropriate tools and then call done with a summary.]],
+    tools = {weather, done}
+}
+
+stock_agent = Agent {
+    provider = "openai",
+    model = "gpt-4o-mini",
+    system_prompt = [[You are an information gathering assistant.
+
+You have access to these tools:
 - stock_price: Get current stock price
 - done: Signal completion
 
 When asked for information, use the appropriate tools and then call done with a summary.]],
-    tools = {weather, stock_price, done}
+    tools = {stock_price, done}
 }
 
 -- Main procedure
@@ -75,23 +103,30 @@ Procedure {
     function(input)
         Log.info("Starting static mock demo", {query = input.query})
 
+        done.reset()
+        weather.reset()
+        stock_price.reset()
+
         -- Ask agent to get information
         local message
+        local agent
         if input.query == "stock" then
             message = "Please get the current stock price for AAPL and call done with the information."
+            agent = stock_agent
         else
             message = "Please get the current weather in San Francisco and call done with the information."
+            agent = weather_agent
         end
 
         -- Run agent
-        info_gatherer({message = message})
+        agent({message = message})
 
         -- Wait for done
         local max_turns = 3
         local turn_count = 1
 
         while not done.called() and turn_count < max_turns do
-            info_gatherer()
+            agent()
             turn_count = turn_count + 1
         end
 
@@ -130,7 +165,8 @@ Feature: Static Mocking
 
   Scenario: Weather query uses static mock
     Given the procedure has started
-    When the procedure runs with query "weather"
+    Given the input query is "weather"
+    When the procedure runs
     Then the weather tool should be called
     And the done tool should be called
     And the output mocked should be True
@@ -138,7 +174,8 @@ Feature: Static Mocking
 
   Scenario: Stock query uses static mock
     Given the procedure has started
-    When the procedure runs with query "stock"
+    Given the input query is "stock"
+    When the procedure runs
     Then the stock_price tool should be called
     And the done tool should be called
     And the output mocked should be True

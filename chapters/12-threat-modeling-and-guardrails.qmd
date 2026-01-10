@@ -1,16 +1,8 @@
 # Threat Modeling and Guardrails
 
-The cover of this book is a monkey with a razor blade.
+In the last chapter we introduced the problem: powerful agents are useful, and power needs guardrails. We also named the levers you can pull—training, routine/structure, capability limits, containment, human gates, and feedback.
 
-That’s not an insult to models. It’s a warning about *power without guardrails*:
-
-- Give an agent filesystem access, and it can delete the wrong directory.
-- Give it network access, and it can leak sensitive data.
-- Give it secrets, and it can accidentally paste them into a prompt—or intentionally exfiltrate them if it’s been prompt-injected.
-
-Part II showed how to build a useful workflow. This part is about making that power *safe to deploy*.
-
-In security terms: we’re going to reduce attack surface, enforce least privilege, and put hard isolation boundaries around untrusted execution—so that when something goes wrong, it fails safely.
+This chapter zooms in on the guardrails that are enforceable **in code**: threat modeling, capability control, tool-boundary validation, and human gates. Later chapters add stronger containment (sandboxing/containers) and the InfoSec “game changer”: secretless execution.
 
 ## Safety vs Information Security (Both Matter)
 
@@ -220,3 +212,4 @@ If you hand an agent a shell tool with access to your home directory, no languag
 This chapter gave you the threat-modeling lens and the first guardrail layer: capability control.
 
 Next, we’ll talk about the “cage” itself: the Lua sandbox and container isolation that let you give agents real power (files, code execution) without trusting them with your actual machine.
+

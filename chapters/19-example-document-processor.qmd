@@ -9,3 +9,4 @@ This chapter is a full example focused on file I/O and robust data processing, w
 - Extracting structured data from messy inputs
 - Error handling patterns that survive retries and restarts
 - Specs + mocks for deterministic tests, plus evals for extraction quality
+

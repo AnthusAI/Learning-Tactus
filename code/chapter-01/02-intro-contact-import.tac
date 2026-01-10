@@ -3,6 +3,24 @@
 -- This is a runnable counterpart to the introduction’s code snippet.
 -- It defines a local `file_contact` tool (as a stub) so the agent has a real capability to call.
 
+-- Mock configuration for testing (only active in mock mode)
+Mocks {
+    importer = {
+        tool_calls = {
+            {
+                tool = "file_contact",
+                args = {
+                    first_name = "FIRST",
+                    last_name = "LAST",
+                    email = "contact@example.com",
+                    notes = "VIP",
+                }
+            }
+        },
+        message = "Filed contact"
+    }
+}
+
 file_contact = Tool {
     description = "Create a contact in our CRM (stub for the book example)",
     input = {
@@ -17,15 +35,6 @@ file_contact = Tool {
     end
 }
 
-input {
-    raw_contact = field.string{
-        required = true,
-        description = "One contact record as raw text (CSV header+row, JSON, email header, etc.)",
-        default = [[First Name,Last Name,E-mail,Notes
-FIRST,LAST,contact@example.com,VIP]]
-    }
-}
-
 importer = Agent {
     provider = "openai",
     model = "gpt-4o-mini",
@@ -37,21 +46,42 @@ Extract first name, last name, email, and notes (if present), then call file_con
     tools = {file_contact},
 }
 
-output {
-    contact_id = field.string{required = true},
-}
+Procedure {
+    input = {
+        raw_contact = field.string{
+            description = "One contact record as raw text (CSV header+row, JSON, email header, etc.)",
+            default = [[First Name,Last Name,E-mail,Notes
+FIRST,LAST,contact@example.com,VIP]]
+        }
+    },
+    output = {
+        contact_id = field.string{required = true},
+    },
+    function(input)
+        importer({message = "Import this contact record:\n" .. input.raw_contact})
 
-importer({message = "Import this contact record:\n" .. input.raw_contact})
+        assert(file_contact.called(), "Agent did not call file_contact")
 
-assert(file_contact.called(), "Agent did not call file_contact")
+        -- Prefer the tool return value, but fall back to deterministic derivation from args
+        -- so this file remains testable in mock mode.
+        local contact_id = file_contact.last_result()
+        if type(contact_id) ~= "string" then
+            local call = file_contact.last_call()
+            local email = call and call.args and call.args.email
+            assert(email, "file_contact was called, but email argument was missing")
+            contact_id = "contact_" .. email
+        end
 
-return {
-    contact_id = file_contact.last_result()
+        return {contact_id = contact_id}
+    end
 }
 
 Specifications([[
 Feature: Intro contact import
   Scenario: Agent files a contact
+    Given the procedure has started
     When the procedure runs
-    Then the file_contact tool should be called
+    Then the file_contact tool should be called exactly 1 time
+    And the output contact_id should match pattern "^contact_"
+    And the procedure should complete successfully
 ]])

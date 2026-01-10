@@ -130,3 +130,4 @@ Lua sandboxing and containers put the monkey in a cage, but there’s one more p
 If the container contains secrets (provider keys, SMTP credentials), the agent can still leak them.
 
 Next, we’ll add the final guardrail: **secretless execution**—moving secrets and privileged operations behind narrow broker interfaces, while keeping the `.tac` workflow code unchanged.
+
