@@ -103,10 +103,10 @@ This includes:
 |---|---|---|---|
 | Train the monkey | reduce error rate | agent prompts, examples, model choice | Part II patterns; evals in Part IV |
 | Change the routine | make behavior structured and testable | procedures, stages, checks, bounded loops, structured outputs | Parts II + IV (loop + specs/evals) |
-| Take the blade away | prevent whole classes of incidents | explicit tool lists; per-stage tool enabling; brokers | Ch 14–16 |
-| Put it in a cage | contain damage when mistakes happen | Lua sandbox; container isolation | Ch 14–16 (esp. sandboxing + runners) |
+| Take the blade away | prevent whole classes of incidents | explicit tool lists; per-stage tool enabling; brokers | Ch 12–14 |
+| Put it in a cage | contain damage when mistakes happen | Lua sandbox; container isolation | Ch 13 (and reinforced by Ch 14) |
 | Human handoff | accountability before risk | `Human.review/approve/input` | Ch 10 (and reinforced in Part III) |
-| Dashboards + alarms | detect drift and enforce policy | traces/state/stages; specs; evals | Ch 11–13 and throughout |
+| Dashboards + alarms | detect drift and enforce policy | traces/state/stages; specs; evals | Ch 15–17 and throughout |
 
 ## A Compact “Leverage Map”
 
@@ -162,9 +162,9 @@ This book will touch these concerns where they intersect with agent safety (espe
 
 In the next chapters, we’ll take these levers and push them “down” into enforceable guardrails:
 
-- **Threat modeling + sandboxing**: boundaries and isolation you can rely on
-- **Brokers and tool runners**: moving power out of the agent and into controlled interfaces
-- **Secretless execution**: keeping credentials out of the agent’s reach entirely
+- **Threat modeling + capability control**: controls you can enforce in code
+- **Sandboxing + isolation**: boundaries that contain mistakes
+- **Secretless execution**: keeping credentials out of the runtime entirely
 
-Then in the reliability chapters, we’ll deepen the feedback-loop levers with **specs** and **evaluations** so “correct and safe” stays true as the workflow evolves.
+Then in Part IV, we’ll deepen the feedback-loop levers with **specs** and **evaluations** so “correct and safe” stays true as the workflow evolves.
 

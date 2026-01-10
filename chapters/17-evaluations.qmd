@@ -81,3 +81,4 @@ The metrics you care about early are boring—but they prevent incidents:
 - does it avoid hallucinating commitments that aren’t in the notes?
 
 Once those are stable, you can add higher-level quality metrics (readability, tone, summarization quality).
+
