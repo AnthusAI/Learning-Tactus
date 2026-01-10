@@ -1,0 +1,149 @@
+# Levers of Control (Beyond Prompt Engineering)
+
+Prompt design is a real lever of control. It’s often the first one you touch, because it’s fast: change a sentence, re-run, see what happens.
+
+But once you’re building workflows that can call tools, pause for humans, run overnight, and affect real systems, you need more than “better instructions.” You need **control surfaces** that let you steer outcomes even when model behavior is non-deterministic.
+
+Systems thinking calls these **leverage points**: you rarely get reliability by tweaking *constants*. You get it by shaping **information flows**, **feedback loops**, **boundaries**, and **governance**.
+
+This chapter names the main levers you can pull in Tactus—what it gives you control over, and what it (intentionally) leaves to the surrounding system.
+
+## A Useful Mental Model: The Agent System Stack
+
+Even “one agent” is usually a system made of layers:
+
+- **Model behavior**: the non-deterministic part (LLM turns).
+- **Orchestration code**: the deterministic part (your procedure).
+- **Tools**: privileged capabilities (APIs, filesystem, network, ticketing).
+- **Environment**: sandboxes, credentials, networking, isolation, storage.
+- **Humans**: approvals, reviews, missing inputs, incident response.
+
+Prompt engineering mostly influences the *model behavior* layer. Tactus is designed to give you leverage at the orchestration/tool/human layers—where strong controls are actually enforceable.
+
+## The Five Control Surfaces Tactus Makes Practical
+
+You can think of Tactus as expanding your control surface from “what the model says” to “how the whole workflow behaves.”
+
+### 1) Information flow (what the agent can see, and what you can inspect)
+
+If a system can’t be observed, it can’t be controlled.
+
+Tactus makes information flows explicit through:
+
+- **Durable traces**: every turn/tool/HITL point is checkpointed.
+- **Explicit `state`**: inspectable memory you can assert against.
+- **Stages**: legible progress markers (“drafting” → “sending” → “complete”).
+- **Structured outputs**: typed “shape” instead of ambiguous text blobs.
+
+This is the lever you pull when the problem is “we don’t know what happened” or “we can’t reliably reproduce why it failed.”
+
+### 2) Feedback loops (diagnostic control: detect drift and correct it)
+
+A feedback loop is any mechanism that measures output and drives correction. In agent systems, this is where reliability comes from.
+
+In Tactus, feedback loops show up as:
+
+- **Quality loops** with explicit checks and bounded retries
+- **BDD specs** for invariants (“never call send without approval”)
+- **Evaluations** for distributional reliability (“how often does it work?”)
+
+This is the lever you pull when the problem is “it works… until it doesn’t” or “quality is inconsistent across inputs.”
+
+### 3) Boundaries (capability control: what the system is allowed to do)
+
+Some failures should be impossible, not merely discouraged.
+
+Tactus supports enforceable boundaries via:
+
+- **Explicit tool lists** (default deny)
+- **Per-turn / per-stage tool enabling**
+- **Tool schemas + deterministic enforcement at the boundary**
+- **Sandboxing / isolation options** (covered in Part III)
+
+This is the lever you pull when the problem is “a mistake could become an incident.”
+
+### 4) Workflow structure (process control: where decisions happen)
+
+Reliability is often about *where* you place decisions:
+
+- Keep irreversible actions in deterministic code
+- Split “draft” from “send”
+- Put high-risk transitions behind gates
+- Make success conditions explicit and checked
+
+Tactus helps here by making workflows readable, durable, and testable as programs—not as a pile of prompts.
+
+This is the lever you pull when the problem is “the workflow shape itself makes it fragile.”
+
+### 5) Human oversight (interactive control: where humans must intervene)
+
+Some decisions should be made by a person, even if an agent can propose them.
+
+Tactus makes that viable by treating HITL as a first-class, durable suspend point:
+
+- `Human.review(...)` for artifacts
+- `Human.approve(...)` for risky actions
+- `Human.input(...)` when the workflow shouldn’t guess
+
+This is the lever you pull when the problem is “we need accountability, not just automation.”
+
+## A Compact “Leverage Map”
+
+This table is a practical way to choose levers. Start from the *risk/failure mode*, then decide which control surface(s) to strengthen.
+
+| If the problem looks like… | Strengthen these levers first | Typical Tactus moves |
+|---|---|---|
+| **We can’t tell what happened** | Information flow | add stages; persist state markers; log structured reasons; return structured outputs |
+| **Quality varies wildly across inputs** | Feedback loops | add checks + bounded retries; promote “taste” into testable constraints; add eval cases |
+| **It sometimes does the dangerous thing** | Boundaries + human oversight | default deny tools; stage tool access; require approval; keep side effects in deterministic code |
+| **Prompt injection / untrusted text changes behavior** | Boundaries + information flow | treat all text as untrusted; narrow tool access; validate tool args; record evidence in state |
+| **Retries are scary** | Workflow structure + information flow | idempotency markers; “send once” guards; explicit stage transitions |
+| **We need auditability** | Information flow + human oversight + feedback loops | durable traces; explicit approvals; specs that encode policies; evaluation reports over time |
+
+This is the core idea: you’re not choosing between “prompting” and “engineering.” You’re expanding the set of levers you can pull when the system needs to be steered.
+
+## What Tactus Does *Not* Control (The “Blank Cells”)
+
+Naming the control surface also makes scope clear. Some important levers are outside the language.
+
+### Model internals
+
+Tactus can choose *which* model to call and how to structure its turns. It can’t control:
+
+- training data and weights
+- latent objectives
+- the model’s true failure modes
+
+You still need model selection, red-teaming, and (sometimes) fine-tuning or retrieval to shift the underlying behavior distribution.
+
+### Organizational goals and incentives
+
+Tactus can help you **encode** a goal as a spec or metric. It cannot decide:
+
+- what your organization should optimize
+- how tradeoffs are negotiated (cost vs latency vs safety)
+- who is accountable for approving high-impact actions
+
+Those levers live in product policy, team practices, and ownership structures.
+
+### Platform dynamics (throughput, queues, scaling)
+
+Tactus procedures can be structured with timeouts, retries, and limits, but platform-level controls usually live elsewhere:
+
+- queueing and concurrency limits
+- rate limiting and backpressure
+- deployment isolation / tenancy separation
+- monitoring, alerting, and incident response
+
+This book will touch these concerns where they intersect with agent safety (especially isolation and secret handling), but they’re broader than any one DSL.
+
+## Looking Ahead
+
+In the next chapters, we’ll take these levers and push them “down” into enforceable guardrails:
+
+- **Threat modeling + sandboxing**: boundaries and isolation you can rely on
+- **Brokers and tool runners**: moving power out of the agent and into controlled interfaces
+- **Secretless execution**: keeping credentials out of the agent’s reach entirely
+
+Then in the reliability chapters, we’ll deepen the feedback-loop levers with **specs** and **evaluations** so “correct and safe” stays true as the workflow evolves.
+

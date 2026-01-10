@@ -29,6 +29,7 @@ book:
         - chapters/10-human-in-the-loop.qmd
     - part: "Part III: Guardrails (Safety + InfoSec)"
       chapters:
+        - chapters/13a-levers-of-control.qmd
         - chapters/14-sandboxing-and-threat-models.qmd
         - chapters/15-brokers-and-tool-runners.qmd
         - chapters/16-secretless-execution.qmd
