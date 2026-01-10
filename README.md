@@ -9,12 +9,32 @@ Tactus builds on DSPy for LLM programming primitives (signatures, modules, optim
 
 This book is built with [Quarto](https://quarto.org/). To build:
 
+### Preview (stable port)
+
+```bash
+./scripts/preview-book.sh
+```
+
+Then open `http://127.0.0.1:4444` (the port stays fixed unless something else is using it).
+
 ### HTML Version
 ```bash
 quarto render --to html
 ```
 
-The HTML output will be in `_output/index.html` with clean, simple web styling.
+The HTML output will be in `_output/index.html` (book cover) and `_output/chapters/*.html` (chapters).
+
+If you want HTML and PDF outputs to stop deleting each other during single-format renders, use:
+
+```bash
+./scripts/render-html.sh
+./scripts/render-pdf.sh
+```
+
+That produces stable outputs at:
+- `_output/html/index.html`
+- `_output/pdf/Learning-Tactus.pdf`
+
 Note: `_output/index.html` is overwritten post-render with `cover.html` (see `_quarto.yml` `project.post-render`), and the book’s preface now lives in `chapters/00-preface.qmd`. The cover expects a square animal image at `images/cover-animal.png` (or `cover-animal.png`).
 
 ### PDF Version

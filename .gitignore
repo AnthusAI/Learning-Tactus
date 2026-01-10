@@ -2,6 +2,12 @@
 _output/
 _freeze/
 .quarto/
+_debug/
+_debug_pdf/
+_output_pdf_test/
+
+# Quarto intermediate figure output
+*_files/
 
 # OS files
 .DS_Store
