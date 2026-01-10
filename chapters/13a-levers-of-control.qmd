@@ -15,6 +15,7 @@ So the natural question is: **how do you control the monkey?**
 There isn’t one answer. There are multiple “handles” you can grab, at different layers:
 
 - You can **train the monkey** (“don’t do that”) — prompts, examples, and model choice.
+- You can **change the routine** — move decisions into deterministic code, add stages, add checks, add retries.
 - You can **take the razor blade away** — don’t grant the capability in the first place.
 - You can **put the monkey in a cage** — isolation and sandboxing so mistakes are contained.
 - You can **require a human handoff** — approvals and reviews before irreversible actions.
@@ -36,72 +37,76 @@ Even “one agent” is usually a system made of layers:
 
 Prompt engineering mostly influences the *model behavior* layer. Tactus is designed to give you leverage at the orchestration/tool/human layers—where strong controls are actually enforceable.
 
-## The Five Control Surfaces Tactus Makes Practical
+## The Levers, Made Concrete
 
-You can think of Tactus as expanding your control surface from “what the model says” to “how the whole workflow behaves.”
+The monkey metaphor is useful because it prevents a common failure mode: treating “better instructions” as the only control.
 
-### 1) Information flow (what the agent can see, and what you can inspect)
+Here’s the practical version of the levers you can pull, and how Tactus tends to express them.
 
-If a system can’t be observed, it can’t be controlled.
+### Lever 1: Train the monkey (make better decisions)
 
-Tactus makes information flows explicit through:
+This includes prompts, examples, model choice, retrieval, and other techniques that shift the behavior distribution.
 
-- **Durable traces**: every turn/tool/HITL point is checkpointed.
-- **Explicit `state`**: inspectable memory you can assert against.
-- **Stages**: legible progress markers (“drafting” → “sending” → “complete”).
-- **Structured outputs**: typed “shape” instead of ambiguous text blobs.
+It matters—but it’s the *softest* control. It can reduce mistakes; it can’t make mistakes impossible.
 
-This is the lever you pull when the problem is “we don’t know what happened” or “we can’t reliably reproduce why it failed.”
+### Lever 2: Change the routine (move decisions into deterministic code)
 
-### 2) Feedback loops (diagnostic control: detect drift and correct it)
+This is the “workflow is the product” lever:
 
-A feedback loop is any mechanism that measures output and drives correction. In agent systems, this is where reliability comes from.
+- split drafting from side effects
+- make stages explicit (so you can gate transitions)
+- encode success criteria as checks
+- cap retries and surface failures clearly
 
-In Tactus, feedback loops show up as:
+If you only change prompts, the monkey still decides where the razor blade goes. If you change the routine, you decide where the monkey is even *allowed* to be holding it.
 
-- **Quality loops** with explicit checks and bounded retries
-- **BDD specs** for invariants (“never call send without approval”)
-- **Evaluations** for distributional reliability (“how often does it work?”)
+### Lever 3: Take the razor blade away (default deny capabilities)
 
-This is the lever you pull when the problem is “it works… until it doesn’t” or “quality is inconsistent across inputs.”
+In Tactus, tools are explicit capabilities. The most reliable safety policy is the one enforced by absence:
 
-### 3) Boundaries (capability control: what the system is allowed to do)
+- don’t give the model a dangerous tool
+- don’t give it broad tools when narrow ones work
+- enable tools only for the stage/turn that needs them
 
-Some failures should be impossible, not merely discouraged.
+### Lever 4: Put the monkey in a cage (containment)
 
-Tactus supports enforceable boundaries via:
+Sometimes you do need powerful tools—filesystem, network, code execution. Then you want containment:
 
-- **Explicit tool lists** (default deny)
-- **Per-turn / per-stage tool enabling**
-- **Tool schemas + deterministic enforcement at the boundary**
-- **Sandboxing / isolation options** (covered in Part III)
+- sandbox the orchestration language/runtime
+- isolate execution in containers or ephemeral environments
+- reduce blast radius when something goes wrong
 
-This is the lever you pull when the problem is “a mistake could become an incident.”
+### Lever 5: Require a human handoff (accountability gates)
 
-### 4) Workflow structure (process control: where decisions happen)
+When the action is irreversible or externally visible, use an explicit handoff:
 
-Reliability is often about *where* you place decisions:
+- review the artifact
+- approve the action
+- request missing inputs instead of guessing
 
-- Keep irreversible actions in deterministic code
-- Split “draft” from “send”
-- Put high-risk transitions behind gates
-- Make success conditions explicit and checked
+This is how “bounded autonomy” becomes a default rather than a special case.
 
-Tactus helps here by making workflows readable, durable, and testable as programs—not as a pile of prompts.
+### Lever 6: Add dashboards and alarms (information flow + feedback loops)
 
-This is the lever you pull when the problem is “the workflow shape itself makes it fragile.”
+If you can’t see behavior over time, you can’t control it over time.
 
-### 5) Human oversight (interactive control: where humans must intervene)
+This includes:
 
-Some decisions should be made by a person, even if an agent can propose them.
+- durable traces and inspectable `state`
+- stage markers to make progress legible
+- specs for invariants (“never do X”)
+- evaluations for reliability over a distribution (“how often does it work?”)
 
-Tactus makes that viable by treating HITL as a first-class, durable suspend point:
+## How These Levers Map to Tactus (and to this Part of the Book)
 
-- `Human.review(...)` for artifacts
-- `Human.approve(...)` for risky actions
-- `Human.input(...)` when the workflow shouldn’t guess
-
-This is the lever you pull when the problem is “we need accountability, not just automation.”
+| Lever | What it accomplishes | Where it shows up in Tactus | Where it shows up in this book |
+|---|---|---|---|
+| Train the monkey | reduce error rate | agent prompts, examples, model choice | Part II patterns; evals in Part IV |
+| Change the routine | make behavior structured and testable | procedures, stages, checks, bounded loops, structured outputs | Parts II + IV (loop + specs/evals) |
+| Take the blade away | prevent whole classes of incidents | explicit tool lists; per-stage tool enabling; brokers | Ch 14–16 |
+| Put it in a cage | contain damage when mistakes happen | Lua sandbox; container isolation | Ch 14–16 (esp. sandboxing + runners) |
+| Human handoff | accountability before risk | `Human.review/approve/input` | Ch 10 (and reinforced in Part III) |
+| Dashboards + alarms | detect drift and enforce policy | traces/state/stages; specs; evals | Ch 11–13 and throughout |
 
 ## A Compact “Leverage Map”
 
