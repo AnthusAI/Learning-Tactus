@@ -21,7 +21,7 @@ There isn’t one answer. There are multiple “handles” you can grab, at diff
 - You can **require a human handoff** — approvals and reviews before irreversible actions.
 - You can **add dashboards and alarms** — traces, state, and tests so you can see drift and correct it.
 
-Systems thinking (for example, Donella Meadows’ “leverage points”) calls these different kinds of interventions **levers of control**: some are quick, some are structural, and some change what the system is even able to do.
+Systems thinking calls these different kinds of interventions **levers of control**: some are quick, some are structural, and some change what the system is even able to do.
 
 This chapter introduces those levers in a practical, Tactus-specific way: what Tactus gives you strong control over, how the levers relate to each other, and what it (intentionally) leaves to the surrounding system.
 
