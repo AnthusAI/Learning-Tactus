@@ -1,12 +1,28 @@
 # Levers of Control (Beyond Prompt Engineering)
 
-Prompt design is a real lever of control. It’s often the first one you touch, because it’s fast: change a sentence, re-run, see what happens.
+The cover of this book is a monkey with a razor blade.
 
-But once you’re building workflows that can call tools, pause for humans, run overnight, and affect real systems, you need more than “better instructions.” You need **control surfaces** that let you steer outcomes even when model behavior is non-deterministic.
+That’s not an insult to models. It’s a warning about **power without guardrails**:
 
-Systems thinking calls these **leverage points**: you rarely get reliability by tweaking *constants*. You get it by shaping **information flows**, **feedback loops**, **boundaries**, and **governance**.
+- Give an agent filesystem access, and it can delete the wrong directory.
+- Give it network access, and it can leak sensitive data.
+- Give it the ability to send messages, and it can send the wrong thing to the wrong person.
 
-This chapter names the main levers you can pull in Tactus—what it gives you control over, and what it (intentionally) leaves to the surrounding system.
+Part II was about making the monkey *useful*—giving it tools and a workflow it can actually complete. Part III is about making that power **safe to deploy**.
+
+So the natural question is: **how do you control the monkey?**
+
+There isn’t one answer. There are multiple “handles” you can grab, at different layers:
+
+- You can **train the monkey** (“don’t do that”) — prompts, examples, and model choice.
+- You can **take the razor blade away** — don’t grant the capability in the first place.
+- You can **put the monkey in a cage** — isolation and sandboxing so mistakes are contained.
+- You can **require a human handoff** — approvals and reviews before irreversible actions.
+- You can **add dashboards and alarms** — traces, state, and tests so you can see drift and correct it.
+
+Systems thinking (for example, Donella Meadows’ “leverage points”) calls these different kinds of interventions **levers of control**: some are quick, some are structural, and some change what the system is even able to do.
+
+This chapter introduces those levers in a practical, Tactus-specific way: what Tactus gives you strong control over, how the levers relate to each other, and what it (intentionally) leaves to the surrounding system.
 
 ## A Useful Mental Model: The Agent System Stack
 
