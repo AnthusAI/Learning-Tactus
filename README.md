@@ -118,6 +118,20 @@ tactus validate code/**/*.tac
 tactus test code/**/*.tac
 ```
 
+## Spec Sync Demo
+
+This repo includes a runnable demo procedure that compares each `chapters/*.qmd` file against the Tactus specification:
+
+```bash
+tactus run sync-book-with-spec.tac --param max_chapters=3
+```
+
+It expects the Tactus repo to exist at `../Tactus` and uses sandbox volume mounts configured in `sync-book-with-spec.tac.yml`.
+
+Outputs:
+- `_output/spec-sync/spec-summary.txt`
+- `_output/spec-sync/report.txt`
+
 ## Design Notes
 
 - **PDF**: Custom styling with magenta title blocks and LaTeX cover

@@ -1,0 +1,8 @@
+# Sidecar config (trusted; NOT sandboxed)
+#
+# Mount the sibling Tactus repo so the procedure can read the spec,
+# and mount this repo’s `_output/` so the generated report persists on the host.
+sandbox:
+  volumes:
+    - "../Tactus:/workspace/_external/Tactus:ro"
+    - "./_output:/workspace/_output:rw"
