@@ -17,6 +17,7 @@ Procedure {
         count = field.number{required = true, description = "Final count of processed items"},
     },
     function(input)
+    -- snippet:start durable-loop
     Log.info("Starting state management example")
 
     -- Initialize state
@@ -31,6 +32,7 @@ Procedure {
     -- Retrieve final state
     local final_count = state.items_processed
     Log.info("Completed processing", {total = final_count})
+    -- snippet:end durable-loop
 
     return {
       success = true,

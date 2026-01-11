@@ -11,6 +11,7 @@ Mocks {
     }
 }
 
+-- snippet:start hello-world-program
 World = Agent {
     provider = "openai",
     model = "gpt-4o-mini",
@@ -27,6 +28,7 @@ Procedure {
         return {message = message}
     end
 }
+-- snippet:end hello-world-program
 
 Specifications([[
 Feature: Hello world

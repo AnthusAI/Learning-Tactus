@@ -1,7 +1,19 @@
 -- Meeting Recap with Idempotent Send (Stubbed)
 -- Demonstrates using state + stages to make side effects retry-safe.
 
+-- snippet:start stages-declare
 Stages({"drafting", "sending", "complete"})
+-- snippet:end stages-declare
+
+-- snippet:start stage-set-example
+-- Stage.set("drafting")
+-- -- create draft...
+--
+-- Stage.set("sending")
+-- -- call send tool (guarded)...
+--
+-- Stage.set("complete")
+-- snippet:end stage-set-example
 
 finalize_recap = Tool {
     description = "Capture recap email fields as structured data",
@@ -25,7 +37,7 @@ send_email = Tool {
     },
     function(args)
         Log.info("Stub send_email called", {to = args.to, subject = args.subject, idempotency_key = args.idempotency_key})
-        return {message_id = "msg_stub_001"}
+        return {message_id = "msg_12345"}
     end
 }
 
@@ -96,6 +108,7 @@ Procedure {
         state.draft_body = draft.body or "TBD"
         state.draft_action_items = draft.action_items or {}
 
+        -- snippet:start send-once-guard
         local function send_once()
             if state.message_id then
                 Log.info("Skipping send (already sent)", {message_id = state.message_id})
@@ -117,6 +130,7 @@ Procedure {
             state.message_id = result.message_id
             return state.message_id
         end
+        -- snippet:end send-once-guard
 
         local first_id = send_once()
 
@@ -152,6 +166,7 @@ Mocks {
     }
 }
 
+-- snippet:start specs-idempotent-send
 Specifications([[
 Feature: Idempotent send step
   Use state to guard side effects so retries don't double-send
@@ -165,3 +180,4 @@ Feature: Idempotent send step
     And the state send_attempts should be 1
     And the stage should be complete
 ]])
+-- snippet:end specs-idempotent-send

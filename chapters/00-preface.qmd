@@ -54,18 +54,7 @@ Every code example in this book is a runnable `.tac` file. You can find them in 
 
 Code examples are shown in blocks like this:
 
-```lua
--- Simple Agent Example
-
-local done = require("tactus.tools.done")
-
-greeter = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
-    system_prompt = "You are a friendly assistant. When asked to greet someone, provide a warm, friendly greeting. When you're done, call the done tool with reason set to your greeting message. Do not use emojis.",
-    initial_message = "Please greet the user with a friendly message",
-    tools = {done},
-}
+```lua {file="code/chapter-01/04-basics-simple-agent.tac" snippet="preface-simple-agent" show-path="true"}
 ```
 
 When we show terminal commands, they look like this:

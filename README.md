@@ -66,6 +66,46 @@ All code examples are in the `code/` directory, organized by chapter. Each examp
 
 To keep examples correct and CI-backed, `code/` is copied directly from the main Tactus repo’s `examples/` directory (`../Tactus/examples`). Prefer updating the upstream example in the Tactus repo, then re-copying it into this book.
 
+## Including Example Code in the Book
+
+Chapters can include code directly from files under `code/` at render-time (so the book can’t drift from runnable examples).
+
+Use a fenced code block with a `file="..."` attribute (optionally `snippet="..."` and `show-path="true"`):
+
+````markdown
+```lua {file="code/chapter-02/10-feature-state.tac" snippet="durable-loop" show-path="true"}
+```
+````
+
+`show-path="true"` renders a small filename label above the code block in HTML output. For PDF output, it renders a `Source: ...` line above the block.
+
+If you use `snippet="..."`, the included file must contain matching markers:
+
+```lua
+-- snippet:start durable-loop
+-- ...
+-- snippet:end durable-loop
+```
+
+If you prefer line-based slicing instead of snippet markers, use `lines="..."` (1-based, inclusive):
+
+````markdown
+```lua {file="code/chapter-02/10-feature-state.tac" lines="15-35"}
+```
+````
+
+You can also use open-ended ranges:
+
+- `lines="15-"` (from line 15 to end)
+- `lines="-35"` (from start through line 35)
+- `lines="15"` (just line 15)
+
+To verify includes are valid:
+
+```bash
+python scripts/check-snippet-includes.py
+```
+
 ## Testing
 
 The GitHub Actions workflow automatically validates and tests all examples:

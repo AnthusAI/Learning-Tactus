@@ -4,6 +4,9 @@ project:
   post-render:
     - "bash scripts/post-render.sh"
 
+filters:
+  - filters/include-code.lua
+
 book:
   title: "Learning Tactus"
   subtitle: "Durable Orchestration for Tool-Using AI Agents"

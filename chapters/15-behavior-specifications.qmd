@@ -33,15 +33,7 @@ Tactus uses Gherkin-style BDD (behavior-driven development) directly inside `.ta
 
 In code, you embed it like:
 
-```lua
-Specifications([[
-Feature: Idempotent send step
-  Scenario: Send is only performed once
-    Given the procedure has started
-    When the procedure runs
-    Then the send_email tool should be called exactly 1 time
-    And the state message_id should exist
-]])
+```lua {file="code/chapter-08/35-meeting-recap-idempotent-send.tac" snippet="specs-idempotent-send" show-path="true"}
 ```
 
 That example is runnable in this repo: `code/chapter-08/35-meeting-recap-idempotent-send.tac`.
@@ -105,4 +97,3 @@ In Part IV, we’ll use specs to lock in policies like:
 - “draft output must have subject/body/action_items”
 
 Then we’ll graduate from “can it work?” to “how often does it work?” with evaluations.
-

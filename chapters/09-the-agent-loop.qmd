@@ -36,21 +36,7 @@ The safe loop has three properties:
 
 In Lua, that usually looks like:
 
-```lua
-local max_attempts = 3
-local attempt = 0
-
-while attempt < max_attempts do
-  attempt = attempt + 1
-
-  -- take a turn (agent call, tool call, etc.)
-
-  if success then
-    break
-  end
-end
-
-assert(success, "Failed to produce an acceptable result after " .. max_attempts .. " attempts")
+```lua {file="code/chapter-09/00-loop-shapes.tac" snippet="safe-loop-shape" show-path="true"}
 ```
 
 ## Make Replays Legible With Logs
@@ -67,9 +53,7 @@ Use `Log.info`, `Log.warn`, and `Log.error` with structured metadata so traces s
 
 When you call an agent, you can override which tools are available *for that call*:
 
-```lua
-worker({tools = {}})           -- no tools this turn
-worker({tools = {search, done}}) -- only these tools
+```lua {file="code/chapter-09/40-meeting-recap-quality-loop.tac" snippet="per-turn-tool-control" show-path="true"}
 ```
 
 This is one of the simplest ways to prevent “tool drift”: you only enable tools when the workflow is ready for them.

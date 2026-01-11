@@ -18,16 +18,7 @@ If your workflow involves an AI making decisions, calling tools, and potentially
 
 Start with the smallest *agentic* Tactus program: define an agent, send it a message, and return what it says.
 
-```lua
-World = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
-    system_prompt = "Your name is World."
-}
-
-return {
-    message = (World {message = "Hello, World!"}).response
-}
+```lua {file="code/chapter-01/01-basics-hello-world.tac" snippet="hello-world-program" show-path="true"}
 ```
 
 This program:

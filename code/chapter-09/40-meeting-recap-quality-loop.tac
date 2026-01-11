@@ -1,6 +1,11 @@
 -- Meeting Recap Quality Loop
 -- Demonstrates a safe agent loop with deterministic checks and bounded retries.
 
+-- snippet:start per-turn-tool-control
+-- worker({tools = {}})              -- no tools this turn
+-- worker({tools = {search, done}})  -- only these tools
+-- snippet:end per-turn-tool-control
+
 finalize_recap = Tool {
     description = "Capture recap email fields as structured data",
     input = {
@@ -97,6 +102,7 @@ Procedure {
     function(input)
         local base_message = "Recipient: " .. input.recipient_name .. "\n\nNotes:\n" .. input.raw_notes
 
+        -- snippet:start safe-loop-shape
         local max_attempts = 3
         local attempt = 0
 
@@ -137,6 +143,7 @@ Procedure {
         end
 
         assert(ok, "Failed to produce an acceptable draft after " .. max_attempts .. " attempts")
+        -- snippet:end safe-loop-shape
 
         return {
             subject = draft.subject or "TBD",

@@ -88,33 +88,7 @@ Instead of writing code to handle every case, you define a capabilityâ€”a toolâ€
 
 Here's the same idea in Tactus. Assume your application has already exposed a `file_contact` tool with typed inputs (`first_name`, `last_name`, `email`, `notes`). We'll define tools soon. (For a runnable version that defines a local stub tool, see `code/chapter-01/02-intro-contact-import.tac`.)
 
-```lua
-input {
-    raw_contact = field.string{required = true, description = "One contact record as raw text"}
-}
-
-importer = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
-    system_prompt = [[
-You will be given one contact record as raw text.
-It might be a 1-row CSV (with header), a JSON object, or an email header.
-Extract first name, last name, email, and notes (if present), then call file_contact exactly once.
-    ]],
-    tools = {file_contact},
-}
-
-output {
-    contact_id = field.string{required = true},
-}
-
-importer({message = "Import this contact record:\n" .. input.raw_contact})
-
-assert(file_contact.called(), "Agent did not call file_contact")
-
-return {
-    contact_id = file_contact.last_result()
-}
+```lua {file="code/chapter-01/02-intro-contact-import.tac" snippet="intro-snippet" show-path="true"}
 ```
 
 That's it. You exposed a capability (`file_contact`), gave it to the agent, and made a single agent call that results in a tool call.

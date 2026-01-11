@@ -33,15 +33,7 @@ That’s script mode. It’s great for tiny examples and quick experiments. For 
 
 When you want more explicit configuration (or you’re building something that will grow), write the wrapper yourself:
 
-```lua
-Procedure {
-  input = { ... },
-  output = { ... },
-  function(input)
-    -- orchestration code
-    return { ... }
-  end
-}
+```lua {file="code/chapter-05/00-procedure-skeleton.tac" snippet="procedure-skeleton" show-path="true"}
 ```
 
 Both compile down to the same thing. Choose the one that reads best for the procedure you’re writing.

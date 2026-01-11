@@ -12,14 +12,7 @@ This chapter explains how it works.
 
 When you write:
 
-```lua
-        local max_turns = 10
-        local turn_count = 0
-
-        while not done.called() and turn_count < max_turns do
-            turn_count = turn_count + 1
-            greeter()
-        end
+```lua {file="code/chapter-01/04-basics-simple-agent.tac" snippet="durable-checkpoint-loop" show-path="true"}
 ```
 
 Each agent call (for example, `greeter()`) creates a checkpoint. The checkpoint includes:
@@ -37,21 +30,7 @@ The key insight: **replay is fast and free**. Checkpointed operations don't re-e
 
 You can see this clearly even in a pure deterministic loop (excerpted from `code/chapter-02/10-feature-state.tac`):
 
-```lua
-    Log.info("Starting state management example")
-
-    -- Initialize state
-    state.items_processed = 0
-
-    -- Process items and track count
-    for i = 1, 5 do
-      State.increment("items_processed")
-      Log.info("Processing item", {number = i})
-    end
-
-    -- Retrieve final state
-    local final_count = state.items_processed
-    Log.info("Completed processing", {total = final_count})
+```lua {file="code/chapter-02/10-feature-state.tac" snippet="durable-loop" show-path="true"}
 ```
 
 If the process restarts mid-loop, the runtime replays the completed work up to the last checkpoint and resumes from the next operation—without repeating the already-completed steps.
@@ -91,62 +70,7 @@ The process doesn't need to stay running. The checkpoint persists. When the huma
 
 This runnable example (copied directly from the main Tactus repo) is simple on purpose: it demonstrates that state updates, logs, and control flow are part of durable execution.
 
-```lua
--- State Management Example
--- Demonstrates setting, getting, and incrementing state values
-
--- Agents (defined at top level - reusable across procedures)
-worker = Agent {
-    provider = "openai",
-    system_prompt = "A simple worker agent",
-    initial_message = "Starting state management example",
-    tools = {},
-}
-
--- Procedure with outputs defined inline
-Procedure {
-    output = {
-        success = field.boolean{required = true, description = "Whether the workflow completed successfully"},
-        message = field.string{required = true, description = "Status message"},
-        count = field.number{required = true, description = "Final count of processed items"},
-    },
-    function(input)
-    Log.info("Starting state management example")
-
-    -- Initialize state
-    state.items_processed = 0
-
-    -- Process items and track count
-    for i = 1, 5 do
-      State.increment("items_processed")
-      Log.info("Processing item", {number = i})
-    end
-
-    -- Retrieve final state
-    local final_count = state.items_processed
-    Log.info("Completed processing", {total = final_count})
-
-    return {
-      success = true,
-      message = "State management example completed successfully",
-      count = final_count
-    }
-end
-}
-
--- BDD Specifications
-Specifications([[
-Feature: State Management
-  Demonstrate state operations in Tactus workflows
-
-  Scenario: State operations work correctly
-    Given the procedure has started
-    When the procedure runs
-    Then the procedure should complete successfully
-    And the state items_processed should be 5
-    And the output success should be True
-    And the output count should be 5
-]])
+```lua {file="code/chapter-02/10-feature-state.tac" show-path="true"}
 ```
 
 Run it in mock mode (no API key needed):

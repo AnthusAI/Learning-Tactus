@@ -11,6 +11,7 @@ Mocks {
 }
 
 -- Define completion tool
+-- snippet:start preface-simple-agent
 local done = require("tactus.tools.done")
 
 greeter = Agent {
@@ -23,6 +24,7 @@ When you're done, call the done tool with reason set to your greeting message. D
     initial_message = "Please greet the user with a friendly message",
     tools = {done},
 }
+-- snippet:end preface-simple-agent
 
 Procedure {
     output = {
@@ -30,6 +32,7 @@ Procedure {
         completed = field.boolean{required = true},
     },
     function(input)
+        -- snippet:start durable-checkpoint-loop
         local max_turns = 10
         local turn_count = 0
 
@@ -39,6 +42,7 @@ Procedure {
             turn_count = turn_count + 1
             greeter()
         end
+        -- snippet:end durable-checkpoint-loop
 
         if done.called() then
             local call = done.last_call()
@@ -71,4 +75,3 @@ Feature: Simple Agent Interaction
     And the output greeting should not be "Agent did not complete properly"
     And the output greeting should match pattern "(Hello|Hi|Greetings|Welcome|hello|hi|greetings|welcome)"
 ]])
-

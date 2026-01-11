@@ -18,20 +18,7 @@ This makes tools the right abstraction for production work: they’re composable
 
 A Lua function tool is defined like this:
 
-```lua
-send_email = Tool {
-  description = "Send an email (stubbed in this repo)",
-  input = {
-    to = field.string{required = true, description = "Recipient email address"},
-    subject = field.string{required = true, description = "Email subject"},
-    body = field.string{required = true, description = "Email body"},
-  },
-  function(args)
-    -- In a real system: call your email provider API here.
-    -- In this book repo: return a fake id so examples have no side effects.
-    return {message_id = "msg_12345"}
-  end
-}
+```lua {file="code/chapter-07/30-meeting-recap-send-tool.tac" snippet="send-email-tool" show-path="true"}
 ```
 
 Two things to notice:

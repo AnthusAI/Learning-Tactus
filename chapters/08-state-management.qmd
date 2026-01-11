@@ -34,26 +34,12 @@ As a rule of thumb:
 
 State is accessed via a metatable-enabled `state` variable:
 
-```lua
--- Set
-state.items_processed = 0
-
--- Get
-local n = state.items_processed
-
--- Check for existence / truthiness
-if state.message_id then
-  Log.info("Already sent", {message_id = state.message_id})
-end
+```lua {file="code/chapter-08/00-state-api-examples.tac" snippet="state-set-get" show-path="true"}
 ```
 
 There are also helper functions for common patterns:
 
-```lua
-State.increment("attempts")        -- attempts += 1
-State.increment("attempts", 5)     -- attempts += 5
-State.append("events", "drafted")  -- append to a list
-local snapshot = State.all()       -- dump all state
+```lua {file="code/chapter-08/00-state-api-examples.tac" snippet="state-helpers" show-path="true"}
 ```
 
 You’ll mostly use `state.*` assignment for normal values, and reach for the helpers when you want concise, intention-revealing operations (counters and append-only logs).
@@ -71,16 +57,7 @@ So you still need a simple, explicit guard: **record the result of the side effe
 
 For “send email”, the obvious marker is a `message_id`:
 
-```lua
-local function send_once(to, subject, body)
-  if state.message_id then
-    return state.message_id
-  end
-
-  local result = send_email({to = to, subject = subject, body = body})
-  state.message_id = result.message_id
-  return state.message_id
-end
+```lua {file="code/chapter-08/35-meeting-recap-idempotent-send.tac" snippet="send-once-guard" show-path="true"}
 ```
 
 This is a tiny pattern with huge consequences: it turns “retries are scary” into “retries are normal”.
@@ -97,20 +74,12 @@ State makes workflows correct. Stages make them understandable.
 
 At the top of a file, declare the stages you expect:
 
-```lua
-Stages({"drafting", "sending", "complete"})
+```lua {file="code/chapter-08/35-meeting-recap-idempotent-send.tac" snippet="stages-declare" show-path="true"}
 ```
 
 Inside your procedure, set/advance stages as you go:
 
-```lua
-Stage.set("drafting")
--- create draft...
-
-Stage.set("sending")
--- call send tool (guarded)...
-
-Stage.set("complete")
+```lua {file="code/chapter-08/35-meeting-recap-idempotent-send.tac" snippet="stage-set-example" show-path="true"}
 ```
 
 This pays off in three ways:

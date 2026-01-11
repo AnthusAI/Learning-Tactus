@@ -15,6 +15,8 @@
     --code-bg: #f8f9fa;
     --code-inline-bg: #f4f4f4;
     --code-border: #5e72e4;
+    --code-label-bg: #eef1f4;
+    --code-label-color: #6b7280;
     --link-color: #5e72e4;
     --quote-color: #666666;
     --table-border: #dddddd;
@@ -33,6 +35,8 @@
         --code-bg: #11151b;
         --code-inline-bg: #11151b;
         --code-border: #7cc0f0;
+        --code-label-bg: #161c24;
+        --code-label-color: #a7b0bf;
         --link-color: #7cc0f0;
         --quote-color: #999999;
         --table-border: #3e3e42;
@@ -144,7 +148,7 @@ h3, h4, h5, h6 {
 /* Code blocks */
 pre {
     background: var(--code-bg);
-    border-left: 3px solid var(--code-border);
+    border: 1px solid var(--border-color);
     padding: 1.35em 1.4em !important;
     overflow-x: auto;
     border-radius: 4px;
@@ -159,6 +163,42 @@ pre code {
     background: transparent;
     padding: 0;
     color: var(--text-color);
+}
+
+/* Included code blocks: show file path label (HTML only) */
+.sourceCode[data-show-path="true"]::before {
+    content: attr(data-file);
+    display: block;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.85em;
+    background: var(--code-label-bg);
+    color: var(--code-label-color);
+    padding: 0.5em 1.4em;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+}
+
+.sourceCode[data-show-path="true"] pre {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-top: 0;
+    border-top: none;
+}
+
+/* Make the code copy icon visible (Quarto embeds a black SVG by default). */
+.code-copy-button {
+    opacity: 0.6;
+}
+
+.code-copy-button:hover {
+    opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+    .code-copy-button > .bi::before {
+        filter: invert(1) brightness(1.15);
+    }
 }
 
 code {

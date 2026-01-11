@@ -13,6 +13,7 @@ finalize_recap = Tool {
     end
 }
 
+-- snippet:start send-email-tool
 send_email = Tool {
     description = "Send an email (stubbed in this repo; returns a fake message_id)",
     input = {
@@ -22,9 +23,10 @@ send_email = Tool {
     },
     function(args)
         Log.info("Stub send_email called", {to = args.to, subject = args.subject})
-        return {message_id = "msg_stub_001"}
+        return {message_id = "msg_12345"}
     end
 }
+-- snippet:end send-email-tool
 
 recapper = Agent {
     provider = "openai",
@@ -121,4 +123,3 @@ Feature: Meeting recap with send tool (stubbed)
     And the send_email tool should be called
     And the output message_id should exist
 ]])
-
