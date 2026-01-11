@@ -10,9 +10,11 @@ This chapter is about isolation boundaries that security professionals recognize
 
 - language sandboxing (reducing what code can do)
 - OS-level sandboxing (constraining what code can touch)
-- ephemeral execution (reducing persistence and cross-run leakage)
+- per-invocation isolation (reducing cross-run/tenant leakage)
 
-Tactus is built around a layered model: Lua sandboxing + container isolation, with a path to “secretless” execution for production (next chapter).
+Tactus uses defense in depth: Lua sandboxing + container isolation, and (in cloud deployments) per-invocation isolation.
+
+On top of that, Tactus is converging on a **brokered runtime** model: the runtime container stays **networkless** and **secretless** while privileged operations happen behind a trusted broker boundary. The next chapter zooms in on that “where do the secrets live?” question.
 
 ## Layer 1: Lua Sandboxing (Language-Level)
 
@@ -72,6 +74,12 @@ Running each execution in a fresh container makes persistence explicit. If you w
 
 That is exactly the kind of explicitness InfoSec teams want.
 
+### Brokered runtime (networkless by default)
+
+Most agent systems need outbound network access to call model providers. Traditionally, that pushes you toward giving the runtime container network access—which is also the primary path for data exfiltration.
+
+Tactus’s Docker sandbox is designed so the untrusted runtime can stay **networkless** by default (`sandbox.network: none`) while still supporting model calls: the runtime asks a **host-side broker** to do privileged work and streams results back into the trace.
+
 ## Running with the Docker Sandbox
 
 Tactus includes CLI support for managing the sandbox image and checking availability:
@@ -81,10 +89,10 @@ tactus sandbox status
 tactus sandbox rebuild
 ```
 
-And you can run a procedure in the sandbox:
+And you can run a procedure (the sandbox is used by default when Docker is available):
 
 ```bash
-tactus run my-procedure.tac --sandbox
+tactus run my-procedure.tac
 ```
 
 If Docker is unavailable and sandboxing is required, Tactus will fail safe (it won’t silently fall back to running on your host). If you *explicitly* want to run without container isolation, you can opt out:
@@ -102,10 +110,12 @@ Most agent systems need outbound network access to call model providers. That cr
 - outbound access is required for usefulness
 - outbound access is also the primary path for data exfiltration
 
-Container isolation lets you control network mode. In development you might allow outbound access. In production, a common strategy is:
+Container isolation lets you control network mode. With a brokered runtime, you can often keep the runtime container **networkless** while still making model calls. A common strategy is:
 
 - run the untrusted runtime with **no outbound network**
 - broker model calls and credentialed tools through a trusted service
+
+If you *do* enable runtime networking (for example, to let a tool call an internal service directly), treat it as a conscious tradeoff: keep secrets out of the runtime, and constrain egress so the runtime can only reach approved endpoints.
 
 That is the “secretless runtime” model, and it’s the topic of the next chapter.
 
@@ -127,7 +137,6 @@ That parity is the point: you develop with the same isolation model you deploy w
 
 Lua sandboxing and containers put the monkey in a cage, but there’s one more problem:
 
-If the container contains secrets (provider keys, SMTP credentials), the agent can still leak them.
+If the runtime has secrets (provider keys, SMTP credentials), the agent can still leak them.
 
 Next, we’ll add the final guardrail: **secretless execution**—moving secrets and privileged operations behind narrow broker interfaces, while keeping the `.tac` workflow code unchanged.
-

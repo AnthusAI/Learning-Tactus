@@ -21,7 +21,7 @@ Tactus’s approach is to treat agent workflows as **untrusted execution** and a
 
 1. **Capability control** (tools + context): the agent can only do what you explicitly allow.
 2. **Language sandboxing** (Lua VM): untrusted code can’t “escape” to the host runtime.
-3. **Container isolation** (Docker / cloud): untrusted code that can write files and run programs is still confined to an ephemeral environment.
+3. **Container isolation** (Docker / cloud): untrusted code that can write files and run programs is still confined to an ephemeral environment (and in the Docker sandbox, the runtime can stay networkless while model calls are brokered).
 4. **Secretless architecture** (brokers): even inside a container, the runtime doesn’t have credentials to steal.
 
 This chapter starts with the first layer: threat modeling and guardrails you can enforce *in code*.
@@ -212,4 +212,3 @@ If you hand an agent a shell tool with access to your home directory, no languag
 This chapter gave you the threat-modeling lens and the first guardrail layer: capability control.
 
 Next, we’ll talk about the “cage” itself: the Lua sandbox and container isolation that let you give agents real power (files, code execution) without trusting them with your actual machine.
-

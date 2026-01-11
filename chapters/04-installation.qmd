@@ -77,9 +77,8 @@ You’ll learn the details in Part III (including a control-surface view of why 
 
 - If you have Docker installed and running, you can check status with `tactus sandbox status`.
 - You can build the sandbox image with `tactus sandbox rebuild`.
-- By default, Tactus is designed to run in a container sandbox when Docker is available (and to error if it’s not, unless you explicitly opt out).
-- You can run a procedure in the container sandbox by adding `--sandbox` to `tactus run ...`.
-- If you need to run without Docker, use `--no-sandbox` (or set `sandbox.enabled: false` in config) and treat it as a conscious security tradeoff.
+- By default, `tactus run` uses the container sandbox when Docker is available (and errors if it’s not, unless you explicitly opt out with `--no-sandbox` or `sandbox.enabled: false`).
+- The default sandbox keeps the runtime container **networkless** and **secretless** while model calls happen via a host-side broker.
 
 If you don’t have Docker, you can still run Tactus locally without container isolation—but you won’t have dev/prod parity for the sandboxed execution model.
 
