@@ -8,21 +8,24 @@
     \fill[color=magenta!80!black] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
 
     % Series text in banner - centered vertically in the banner
-    \node[white,font=\rmfamily\small\bfseries] at ([yshift=-0.75cm]current page.north) {THE TACTUS SERIES};
+    \node[white,font=\sffamily\small\bfseries] at ([yshift=-0.75cm]current page.north) {THE TACTUS SERIES};
 
-    % Main magenta title block - centered behind the title
-    \node[fill=magenta!80!black,minimum width=15.5cm,minimum height=3.1cm,anchor=center] (titleblock) at ([yshift=-6.2cm]current page.north) {};
+    % Main magenta title block - wider and shorter, centered
+    \node[fill=magenta!80!black,minimum width=16.5cm,minimum height=5cm,anchor=north] (titleblock) at ([yshift=-3.3cm]current page.north) {};
+    
+    % "Learning" prefix in gray italic, positioned above and aligned to left edge of title block
+    \node[black!50,font=\sffamily\fontsize{18}{22}\selectfont\itshape,anchor=south west] (learning) at ([yshift=0.15cm]titleblock.north west) {Learning};
 
-    % Title in white on magenta - centered vertically in the rectangle
-    \node[white,font=\rmfamily\fontsize{56}{60}\selectfont\bfseries] at (titleblock.center) {Learning Tactus};
+    % Title "Tactus" in white on magenta - centered in the rectangle, bolder, tighter kerning
+    \node[white,font=\sffamily\bfseries\fontsize{144}{150}\selectfont] at (titleblock.center) {\addfontfeature{LetterSpace=-3.0}Tactus};
 
     % Subtitle
-    \node[black,font=\rmfamily\LARGE\bfseries,text width=12.5cm,align=center] (subtitle) at ([yshift=-0.9cm]titleblock.south) {Durable Orchestration for Tool-Using AI Agents};
+    \node[black,font=\sffamily\LARGE\bfseries,text width=18cm,align=center] (subtitle) at ([yshift=-0.5cm]titleblock.south) {Durable Orchestration for Tool-Using AI Agents};
 
-    % Cover art (centered, no border)
-    \node[anchor=north] at ([yshift=-0.8cm]subtitle.south) {\includegraphics[width=15cm,height=15cm,keepaspectratio]{images/cover-animal.png}};
+    % Cover art (centered, no border) - moved up relative to subtitle
+    \node[anchor=north] at ([yshift=-0.2cm]subtitle.south) {\includegraphics[width=15cm,height=15cm,keepaspectratio]{images/cover-animal.png}};
 
-    % Author
-    \node[black,font=\Large\rmfamily] at ([yshift=2.0cm]current page.south) {Ryan Porter};
+    % Author - moved down and made bolder
+    \node[black,font=\Large\sffamily\bfseries] at ([yshift=1.6cm]current page.south) {Ryan Porter};
 \end{tikzpicture}
 \clearpage
