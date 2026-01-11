@@ -9,7 +9,7 @@ filters:
 
 book:
   title: "Learning Tactus"
-  subtitle: "Durable Orchestration for Tool-Using AI Agents"
+  subtitle: "Give AI agents powerful tools. Safely and securely."
   author: "Ryan Porter"
   date: today
   chapters:
