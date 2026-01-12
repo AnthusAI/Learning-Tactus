@@ -4,6 +4,11 @@ Welcome to *Learning Tactus*.
 
 Tactus is a programming language for building AI agents. You define agents, give them tools, and write procedures that orchestrate their work. The runtime handles the hard parts—durability, checkpointing, and human-in-the-loop—so you can focus on what your agents should do.
 
+## Formats
+
+- **HTML:** [Read online]({{< meta book_html_url >}})
+- **PDF:** [Download PDF]({{< meta book_pdf_url >}})
+
 If you’ve experimented with tool-using agents, you’ve probably felt the magic: plug a tool into a chat assistant (Cursor, Claude.ai, anything that speaks MCP), describe what you want, and the model can use it—while you watch.
 
 That’s great for interactive sessions. The problem starts when you want the same tool access in an unattended workflow: background jobs, pipelines, or agents that run overnight. Useful tools are powerful—and power cuts both ways. An email tool can send the right message… or the wrong message to the wrong person.
@@ -62,6 +67,10 @@ When we show terminal commands, they look like this:
 ```bash
 tactus run hello.tac
 ```
+
+## Version
+
+Built and tested against Tactus `{{< meta tactus_version_tag >}}` (commit `{{< meta tactus_commit_short >}}`).
 
 ## Let's Begin
 

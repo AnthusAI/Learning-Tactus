@@ -22,9 +22,21 @@ jobs:
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: true
 
       - name: Render book
         run: quarto render --to html
+
+      - name: Ensure LaTeX packages (PDF)
+        run: |
+          set -euo pipefail
+          if command -v tlmgr >/dev/null 2>&1; then
+            tlmgr install fvextra pgf libertinus || true
+          fi
+
+      - name: Render PDF
+        run: ./scripts/render-pdf.sh
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

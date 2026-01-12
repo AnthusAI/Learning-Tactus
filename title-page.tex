@@ -5,13 +5,13 @@
     \fill[white] (current page.north west) rectangle (current page.south east);
 
     % Top magenta banner (flush to top edge)
-    \fill[color=magenta!80!black] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
+    \fill[color=magenta] (current page.north west) rectangle ([yshift=-1.5cm]current page.north east);
 
     % Series text in banner - centered vertically in the banner
     \node[white,font=\sffamily\small\bfseries] at ([yshift=-0.75cm]current page.north) {THE TACTUS SERIES};
 
     % Main magenta title block - wider and shorter, centered
-    \node[fill=magenta!80!black,minimum width=16.5cm,minimum height=5cm,anchor=north] (titleblock) at ([yshift=-3.3cm]current page.north) {};
+    \node[fill=magenta,minimum width=16.5cm,minimum height=5cm,anchor=north] (titleblock) at ([yshift=-3.3cm]current page.north) {};
     
     % "Learning" prefix in gray italic, positioned above and aligned to left edge of title block
     \node[black!50,font=\sffamily\fontsize{18}{22}\selectfont\itshape,anchor=south west] (learning) at ([yshift=0.15cm]titleblock.north west) {Learning};

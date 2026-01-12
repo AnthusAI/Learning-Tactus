@@ -4,6 +4,7 @@ A book introducing Tactus: durable orchestration for tool-using AI agents.
 Tactus builds on DSPy for LLM programming primitives (signatures, modules, optimizers) and adds a higher-level DSL with durability, sandboxing, and human-in-the-loop.
 
 **Read online:** https://anthusai.github.io/Learning-Tactus/
+**Latest PDF:** https://anthusai.github.io/Learning-Tactus/pdf/Learning-Tactus.pdf
 
 ## Building the Book
 
@@ -29,6 +30,12 @@ If you want HTML and PDF outputs to stop deleting each other during single-forma
 ```bash
 ./scripts/render-html.sh
 ./scripts/render-pdf.sh
+```
+
+Or run both in one go:
+
+```bash
+./scripts/render-all.sh
 ```
 
 That produces stable outputs at:
@@ -65,6 +72,16 @@ All code examples are in the `code/` directory, organized by chapter. Each examp
 - Can be tested with `tactus test code/**/*.tac`
 
 To keep examples correct and CI-backed, `code/` is copied directly from the main Tactus repo’s `examples/` directory (`../Tactus/examples`). Prefer updating the upstream example in the Tactus repo, then re-copying it into this book.
+
+## Upstream Tactus Version (Pinned)
+
+This book tracks which upstream Tactus commit it targets in `tactus-target.yml`. Update it from a local Tactus checkout (sibling repo layout assumed):
+
+```bash
+bash scripts/update-tactus-target.sh ../Tactus
+```
+
+CI uses `tactus-target.yml` to install the matching Tactus commit when validating/testing examples, and the book prints the pinned version in the Preface.
 
 ## Including Example Code in the Book
 

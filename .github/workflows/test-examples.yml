@@ -18,8 +18,26 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Tactus
-        run: pip install tactus
+      - name: Install Tactus (pinned to book target if configured)
+        run: |
+          set -euo pipefail
+
+          repo=""
+          commit=""
+
+          if [[ -f tactus-target.yml ]]; then
+            repo="$(sed -n 's/^tactus_repo: //p' tactus-target.yml | head -n1 || true)"
+            commit="$(sed -n 's/^tactus_commit: //p' tactus-target.yml | head -n1 || true)"
+          fi
+
+          if [[ -n "${repo}" && -n "${commit}" && "${commit}" != "unknown" ]]; then
+            echo "Installing Tactus from ${repo}@${commit}"
+            pip install "git+https://github.com/${repo}.git@${commit}" || pip install tactus
+          else
+            echo "Installing Tactus from PyPI"
+            pip install tactus
+          fi
+        shell: bash
 
       - name: Check book snippet includes
         run: python scripts/check-snippet-includes.py

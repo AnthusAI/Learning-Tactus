@@ -4,6 +4,10 @@ project:
   post-render:
     - "bash scripts/post-render.sh"
 
+metadata-files:
+  - book-links.yml
+  - tactus-target.yml
+
 filters:
   - filters/include-code.lua
 
