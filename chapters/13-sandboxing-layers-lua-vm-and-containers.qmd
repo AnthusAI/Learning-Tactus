@@ -2,7 +2,7 @@
 
 In the last chapter we treated the agent like what it is in production: **untrusted execution with the ability to take actions**.
 
-Capability control (tools + stages + approvals) is the first line of defense. But once you start giving agents real power—writing files, generating code, running programs—you also want a *cage*:
+Capability control (tools + stages + approvals) is the first line of defense. That’s the **principle of least privilege** applied to agents: grant only the tools and context required for the current stage. But once you start giving agents real power—writing files, generating code, running programs—you also want a *cage*:
 
 > If the monkey has a razor blade, it shouldn’t be standing in your living room.
 
@@ -55,6 +55,13 @@ The principle is simple:
 - Network access can be controlled (or disabled entirely)
 
 This gives you the ability to hand an agent powerful tools—write files, run Python, compile code—without giving it access to your actual machine.
+
+It’s important to separate two different kinds of protection:
+
+- **System safety**: protecting the host machine and preventing cross-run leakage through the filesystem.
+- **Information security**: preventing the agent from ever seeing secrets (API keys, credentials) that it could leak.
+
+Containers are great for system safety and isolation—but they’re not a secret-hiding mechanism. If you pass credentials into the runtime container (or the process), the agent can often still exfiltrate them through tool misuse or prompt injection. That’s why Tactus pairs isolation with a stricter boundary: keep the runtime **secretless**, and broker privileged operations (model calls and credentialed tools) behind a narrow interface.
 
 From a security standpoint, this is about:
 

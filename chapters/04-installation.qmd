@@ -4,11 +4,24 @@ Part I was about *why* Tactus exists. Now we’ll do the minimum setup so you ca
 
 Tactus is a Python package with a CLI. You install it with `pip`, and you write workflows as `.tac` files (Lua syntax).
 
+## A Note About “Hosts” (Runtime Environments)
+
+When you run a Tactus procedure, it may ask a human for input using primitives like `Human.approve`, `Human.input`, and `Human.review`.
+
+That implies a basic architectural rule:
+
+- **Tactus code runs inside a host (runtime)** that knows how to render those interaction requests and collect responses.
+
+The simplest host is the **CLI**, which prompts in your terminal. There’s also a **web-based IDE** (a reference UI implementation), and in the long run the intended use is **embedding Tactus into your own application**, where your app’s UI renders the same structured interactions.
+
+This book primarily uses the **CLI host** so you can run everything locally and deterministically. The IDE is optional, but it’s helpful for seeing what “human-in-the-loop as UI components” can look like.
+
 ## What You'll Do
 
 - Install Tactus and verify the `tactus` CLI works
 - Clone this book repo so you have the `code/` examples
 - Run a first spec with `tactus test --mock` (fast, no API key required)
+- (Optional) run the Tactus IDE (web UI host) to see HITL as components
 - (Optional) install Docker for container sandboxing and dev/prod parity
 - Set up provider credentials for “real runs” when you’re ready
 
@@ -18,6 +31,7 @@ Tactus is a Python package with a CLI. You install it with `pip`, and you write 
 - A working `pip` (we’ll use `python -m pip ...` to avoid PATH surprises)
 - **Git** (to clone this book’s repo and run the examples)
 - **Docker (strongly encouraged)** if you want to run procedures the way they run in production (container isolation)
+- **Node 20+ (optional)** if you want to run the Tactus IDE frontend
 
 ## Install Tactus
 
@@ -69,9 +83,37 @@ tactus test code/chapter-01/04-basics-simple-agent.tac --mock
 
 If that passes, you’re ready for most of the book.
 
+## Optional: Try the Tactus IDE (Web UI Host)
+
+The Tactus IDE runs procedures and renders human-in-the-loop interactions as UI components (buttons, forms, review panels). Think of it as a **reference host** you can learn from before embedding Tactus into your own product.
+
+At the moment, the IDE requires the Tactus repo checkout (because it includes a React frontend):
+
+```bash
+git clone https://github.com/AnthusAI/Tactus.git
+cd Tactus
+
+# Python (recommended: venv)
+python -m pip install -U pip
+python -m pip install -e .
+
+# Node 20+ for the IDE frontend
+cd tactus-ide/frontend
+npm install
+npm run build
+
+# Back in repo root
+cd ../..
+tactus ide
+```
+
+If you’re developing the IDE itself (hot reload), run `make dev-ide` from the Tactus repo instead of `npm run build`.
+
 ## Optional (Strongly Encouraged): Docker Sandbox
 
 Tactus can run procedures inside a fresh container so agent tool code can’t touch your host system. This becomes important as soon as you start giving agents filesystem and network tools.
+
+This is separate from the **Lua VM sandbox** (language-level restrictions on `.tac` code) and from **secretless execution** (keeping credentials out of the runtime via broker boundaries). In practice, you often want all of these layers at once.
 
 You’ll learn the details in Part III (including a control-surface view of why isolation matters). For now:
 
@@ -80,7 +122,7 @@ You’ll learn the details in Part III (including a control-surface view of why 
 - By default, `tactus run` uses the container sandbox when Docker is available (and errors if it’s not, unless you explicitly opt out with `--no-sandbox` or `sandbox.enabled: false`).
 - The default sandbox keeps the runtime container **networkless** and **secretless** while model calls happen via a host-side broker.
 
-If you don’t have Docker, you can still run Tactus locally without container isolation—but you won’t have dev/prod parity for the sandboxed execution model.
+If you don’t have Docker, you can still run Tactus locally with language-level sandboxing—but you won’t have dev/prod parity for container isolation (and the strongest “fresh per run” filesystem boundary).
 
 ## Real Runs (Requires a Provider Key)
 

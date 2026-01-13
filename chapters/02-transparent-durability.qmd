@@ -64,7 +64,7 @@ When `Human.approve()` is called:
 7. `approved` receives the human's response
 8. Execution continues
 
-The process doesn't need to stay running. The checkpoint persists. When the human finally responds, a new process can pick up exactly where the old one left off.
+The process doesn't need to stay running. That means you don’t burn compute resources “waiting on a human,” and you don’t have to keep the same runtime environment alive until the end. The checkpoint persists. When the human finally responds, a new process can pick up exactly where the old one left off.
 
 ## Example: Durable State
 

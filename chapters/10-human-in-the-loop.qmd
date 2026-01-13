@@ -67,6 +67,15 @@ The same Lua code can run with different HITL handlers:
 
 The procedure doesn’t change. That portability is the point.
 
+This is also how you move beyond the “everyone uses chat” paradigm. Instead of forcing end users to steer the agent turn-by-turn, your application can surface **structured, minimal interactions**:
+
+- ask for one missing field at the moment it’s needed (not a long chat)
+- present a draft artifact in a review UI (with edits)
+- require an explicit approval before a side effect
+- show stages/logs so operators can monitor many runs at once
+
+In other words: the human is still in the loop, but they’re an approver/reviewer/operator—not a full-time copilot.
+
 ## Where This Takes Us
 
 At this point in Part II, our workflow is:

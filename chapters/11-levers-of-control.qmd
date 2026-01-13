@@ -31,11 +31,25 @@ Even “one agent” is usually a system made of layers:
 
 - **Model behavior**: the non-deterministic part (LLM turns).
 - **Orchestration code**: the deterministic part (your procedure).
-- **Tools**: privileged capabilities (APIs, filesystem, network, ticketing).
-- **Environment**: sandboxes, credentials, networking, isolation, storage.
+- **Capabilities**: tools + context, granted explicitly (principle of least privilege).
+- **Isolation boundaries**: sandboxing and containment (Lua VM, containers, broker boundaries).
 - **Humans**: approvals, reviews, missing inputs, incident response.
+- **Feedback**: logs, traces, specs, and evaluations so you can see what happened (and how often it works).
 
-Prompt engineering mostly influences the *model behavior* layer. Tactus is designed to give you leverage at the orchestration/tool/human layers—where strong controls are actually enforceable.
+Prompt engineering mostly influences the *model behavior* layer. Tactus is designed to give you leverage at the orchestration/capability/isolation/human layers—where strong controls are actually enforceable.
+
+Here’s a visual placeholder for the stack (replace with an Excalidraw diagram later):
+
+```{mermaid}
+flowchart TB
+  MB["Model behavior<br/>(prompts, examples, model choice)"]
+  OC["Orchestration code<br/>(procedures, stages, checks)"]
+  Capabilities["Capabilities<br/>(tools + context, principle of least privilege)"]
+  Isolation["Isolation boundaries<br/>(Lua VM, containers, brokers)"]
+  Humans["Humans<br/>(approve, review, input)"]
+  Feedback["Feedback<br/>(logs, traces, specs, evals)"]
+  MB --> OC --> Capabilities --> Isolation --> Humans --> Feedback
+```
 
 ## The Levers, Made Concrete
 
@@ -167,4 +181,3 @@ In the next chapters, we’ll take these levers and push them “down” into en
 - **Secretless execution**: keeping credentials out of the runtime entirely
 
 Then in Part IV, we’ll deepen the feedback-loop levers with **specs** and **evaluations** so “correct and safe” stays true as the workflow evolves.
-

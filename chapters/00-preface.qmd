@@ -11,9 +11,7 @@ Tactus is a programming language for building AI agents. You define agents, give
 
 If you’ve experimented with tool-using agents, you’ve probably felt the magic: plug a tool into a chat assistant (Cursor, Claude.ai, anything that speaks MCP), describe what you want, and the model can use it—while you watch.
 
-That’s great for interactive sessions. The problem starts when you want the same tool access in an unattended workflow: background jobs, pipelines, or agents that run overnight. Useful tools are powerful—and power cuts both ways. An email tool can send the right message… or the wrong message to the wrong person.
-
-If you rely on the model to always call the right tool at the right time with the right inputs, you’re giving a monkey a razor blade and hoping for the best. That might work a few times, but it isn’t a sustainable way to build something you can trust.
+That’s great for interactive sessions. The problem starts when you want the same tool access in an unattended workflow: background jobs, pipelines, or agents that run overnight. Useful tools are powerful—and power cuts both ways. An email tool can send the right message… or the wrong message to the wrong person. If you rely on the model to always call the right tool at the right time with the right inputs, you’re giving a monkey a razor blade and hoping for the best. That might work a few times, but it isn’t a sustainable way to build something you can trust.
 
 This book is for people who want to keep the magic, but make it safe to run unattended.
 

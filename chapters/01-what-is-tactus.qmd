@@ -45,11 +45,15 @@ Most real Tactus procedures also include tools, state, and tests. We'll build up
 
 You can build AI agents in Python, TypeScript, or any language. Why use Tactus?
 
-**Predictable orchestration.** AI models don't follow instructions perfectly every time. Tell an agent to "always call tool X first" and run it 1000 times—it'll fail at least once. At scale, that matters. Tactus lets you use imperative code for the parts that must be deterministic, and agent turns for the parts that benefit from intelligence.
+**Predictable orchestration.** AI models don't follow instructions perfectly every time. Tell an agent to "always call tool X first" and run it 1000 times—it'll fail at least once. At scale, that matters. Tactus lets you use imperative code for the parts that must be deterministic, and agent turns for the parts that benefit from intelligence. If something must happen (or must never happen), move it out of the prompt layer and into the workflow.
 
 **Built-in durability.** Every agent turn is automatically checkpointed. If your process crashes, it resumes from where it left off—not from the beginning. No database setup, no serialization code, no checkpoint logic.
 
 **First-class human-in-the-loop.** Need human approval before proceeding? Call `Human.approve({ ... })`. The process suspends, waits for the human (hours or days later), and resumes exactly where it paused.
+
+**Structured interaction (beyond chat).** Chat is a great UI for exploration, but most apps don’t want every user to “drive” an agent in a free-form conversation. In Tactus, human interaction is expressed as typed, structured requests (`approve`, `review`, `input`) so embedded applications can render the right UI at the right moment—forms, modals, Slack messages, inbox queues—without forcing deep engagement with a chat transcript.
+
+**Reproducible, runnable procedures.** A Tactus file is a program: it declares a typed interface (`input`/`output`), encodes setup steps deterministically, and can suspend durably while waiting for humans. That makes it easier to package and share reliable workflows with non-developers, where humans oversee outcomes instead of supervising every tool call.
 
 **A new testing paradigm for a new programming paradigm.** Traditional code is deterministic—run it twice, get the same result. You can write unit tests that pass or fail. Agent-based code is non-deterministic. It's not enough to ask "does it produce the right answer?"—you also need to ask "does it *reliably* produce the right answer?" Those are two different questions.
 

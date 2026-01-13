@@ -2,6 +2,8 @@
 
 For the first time since the dawn of computer programming, there is a fundamentally new kind of computer program.
 
+One that can apply judgment to messy inputs and use tools to take action: import contacts, draft and send emails, write files, deploy code. That’s useful—and dangerous. If you rely on the model to always call the right tool at the right time with the right inputs, you’re giving a monkey a razor blade and hoping for the best.
+
 Since the 1950s, programming has meant one thing: anticipate every scenario and write code to handle it. Parse this format. Catch that error. Map these fields to those fields. If you miss a case, the program breaks.
 
 That's changing.
@@ -137,6 +139,46 @@ The solution is creating narrow, well-defined scenarios where agents apply their
 - **Break complex tasks** into smaller, focused pieces
 - **Manage the information flow** between task executions
 - **Change instructions** as the workflow progresses
+
+In computer security, this is the **principle of least privilege**: give an actor the smallest set of capabilities and information it needs to do its job, for the shortest time, and nothing more. Tactus makes that practical for AI agents by letting you grant tools and context per stage (and even per turn), instead of running with a permanent, always-on toolbelt.
+
+## Beyond Chat: Embedded Agent Programs
+
+Chat is a fantastic interface for *developing* an agent. It’s often a poor interface for *using* one.
+
+Most applications have common workflows that repeat: import a file, draft an email, triage a ticket, propose changes, ship a release. If every run requires a back-and-forth chat session, you’re asking users to engage deeply with the process—even when they just want to provide a missing field or approve a risky step.
+
+Tactus is designed to be embedded into applications so agent programs can interact with users through **structured requests** at the right times:
+
+- request missing information with `Human.input({ ... })`
+- request a review (and allow edits) with `Human.review({ ... })`
+- request approval before irreversible actions with `Human.approve({ ... })`
+- emit high-level stages, logs, and traces for monitoring and operations
+
+That’s why HITL is a set of language primitives rather than a framework convention: the procedure declares **what** it needs, and the host application decides **how** to render it—CLI prompts, web modals, Slack messages, email links, or your own UI components.
+
+Durability makes this practical. When a procedure reaches a HITL call, it can suspend indefinitely without keeping a process alive. When the human responds hours (or days) later, the procedure resumes from that checkpoint—potentially in a fresh process, on a different machine, in a different runtime environment.
+
+## From Prototypes to Reproducible Procedures
+
+Tools like Claude Code and Cursor (and features like Claude’s skills) are great for prototyping. They work because a developer is present: supervising, steering, and ensuring the model uses the right tools in the right order.
+
+But that doesn’t package well—especially for non-developers.
+
+Tactus procedures are runnable artifacts. They encode the setup steps deterministically (including “run tool X first”), keep capabilities explicit, and expose a typed interface (`input`/`output`) that other people can run like a program. A subject-matter expert doesn’t need to babysit a chat session—they can approve, review, or provide missing inputs at durable checkpoints.
+
+One way to see the shift is as a set of control surfaces. Prompts are one lever—but they’re the softest. As you’ll see later in this book (Part III), Tactus is designed to give you stronger, more enforceable leverage “below” the prompt layer:
+
+```{mermaid}
+flowchart TB
+  MB["Model behavior<br/>(prompts, examples, model choice)"]
+  OC["Orchestration code<br/>(procedures, stages, checks)"]
+  Capabilities["Capabilities<br/>(tools + context, principle of least privilege)"]
+  Isolation["Isolation boundaries<br/>(Lua VM, containers, brokers)"]
+  Humans["Humans<br/>(approve, review, input)"]
+  Feedback["Feedback<br/>(logs, traces, specs, evals)"]
+  MB --> OC --> Capabilities --> Isolation --> Humans --> Feedback
+```
 
 A new programming paradigm also requires a new testing paradigm.
 

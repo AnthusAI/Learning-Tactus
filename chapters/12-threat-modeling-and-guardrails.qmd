@@ -24,6 +24,8 @@ Tactus’s approach is to treat agent workflows as **untrusted execution** and a
 3. **Container isolation** (Docker / cloud): untrusted code that can write files and run programs is still confined to an ephemeral environment (and in the Docker sandbox, the runtime can stay networkless while model calls are brokered).
 4. **Secretless architecture** (brokers): even inside a container, the runtime doesn’t have credentials to steal.
 
+These layers solve different problems. Language sandboxing and containers are primarily about **system safety** and **isolation** (what code can touch, and what state can leak across runs). Brokers are primarily about **information security** (where secrets live, and who can use them). In production you often want multiple layers at once.
+
 This chapter starts with the first layer: threat modeling and guardrails you can enforce *in code*.
 
 ## A Practical Threat Model for Agent Workflows
@@ -86,7 +88,7 @@ Controls should be enforceable, not aspirational. “The prompt says don’t lea
 Tactus gives you controls in three places:
 
 - at the **tool boundary** (schemas + deterministic code)
-- in the **orchestration code** (least privilege + stage gating)
+- in the **orchestration code** (principle of least privilege + stage gating)
 - at **execution boundaries** (sandboxing + secretless execution)
 
 ## Control Layer 1: Capability-Based Design (Default Deny)
@@ -101,7 +103,9 @@ The agent can only do what you give it.
 
 This is the opposite of the “agent script” model where the agent runs in a general-purpose Python process with ambient authority (filesystem, env vars, network) and you *hope* it behaves.
 
-### Least privilege, applied per stage
+### The principle of least privilege, applied per stage
+
+In security terms, the **principle of least privilege** means: grant only what’s required, scope it tightly, and remove it when it’s no longer needed. In agent workflows, the practical version is staged (and per-turn) tool access.
 
 The most practical pattern you’ll use is **staged tool access**:
 
@@ -110,6 +114,8 @@ The most practical pattern you’ll use is **staged tool access**:
 3. Send stage: allow the side-effect tool only after explicit approval.
 
 In Part II we already used this idea informally. In this part, treat it as a security control.
+
+This is also where many interactive agent environments fall down: the model often has a broad, always-on toolbelt and more context than it strictly needs at any given moment. Staged (and per-turn) tool access lets you apply the principle of least privilege with much finer granularity.
 
 ### Keep “dangerous tools” out of the agent tool list
 
