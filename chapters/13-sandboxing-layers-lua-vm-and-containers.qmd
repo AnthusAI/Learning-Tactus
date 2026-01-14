@@ -69,17 +69,22 @@ From a security standpoint, this is about:
 - **confidentiality**: limiting what the runtime can read
 - **isolation**: preventing cross-run/tenant leakage through shared state
 
-### Ephemeral by default
+### Ephemeral by default (with explicit persistence)
 
-An important “security smell” in agent systems is persistence-by-accident:
+An important "security smell" in agent systems is persistence-by-accident:
 
 - an agent writes a file with sensitive data
 - that file gets picked up by a later run
 - now you have cross-session leakage and unclear provenance
 
-Running each execution in a fresh container makes persistence explicit. If you want a file to survive, you mount a volume and choose what crosses the boundary.
+Running each execution in a fresh container makes persistence explicit. **By default, your current directory is mounted at `/workspace`, making it easy for procedures to read and write project files.** This strikes a balance between convenience and safety:
 
-That is exactly the kind of explicitness InfoSec teams want.
+- Procedures can naturally work with project files (read source code, write outputs)
+- Container isolation ensures procedures can only access the project directory, not your entire filesystem
+- Git provides version control, making all changes reviewable and reversible
+- Additional data sources can be mounted via sidecar configuration
+
+For workflows that need more restricted access (like output-only report generation or untrusted procedures), you can disable the default mount and explicitly configure only what's needed. This explicitness is exactly what InfoSec teams want: clear boundaries about what data crosses into the runtime.
 
 ### Brokered runtime (networkless by default)
 
