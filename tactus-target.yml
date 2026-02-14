@@ -1,8 +1,8 @@
 tactus_repo: AnthusAI/Tactus
 tactus_ref: main
-tactus_commit: d2fa66890aafcece6dd7fcae0d914e1c3b375ab8
-tactus_commit_short: d2fa66890aaf
-tactus_describe: v0.42.3-11-gd2fa668
+tactus_commit: 0ee57296a1fd9f5ed4972d65be1a82dfbd15e844
+tactus_commit_short: 0ee57296a1fd
+tactus_describe: v0.42.3-12-g0ee5729
 tactus_version_tag: v0.42.3
 tactus_version: 0.42.3
-tactus_recorded_at: 2026-02-14T14:23:10Z
+tactus_recorded_at: 2026-02-14T14:35:25Z
