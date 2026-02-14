@@ -45,7 +45,7 @@ Tactus automatically checkpoints these operations:
 | `Human.approve()` | The approval request and human's response |
 | `Human.input()` | The input request and human's response |
 | `Procedure.run()` | Sub-procedure inputs, outputs, and state |
-| `Model.predict()` | ML model inputs and outputs |
+| `Model("sentiment")({text = "..."})` | Model inputs and outputs |
 
 State changes (`state.*` assignment, `State.increment`) and log entries are also tracked, ensuring consistent replay.
 
