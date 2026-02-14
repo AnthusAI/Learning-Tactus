@@ -27,9 +27,8 @@ send_email = Tool {
 }
 
 recapper = Agent {
-    provider = "openai",
     model = {
-        name = "gpt-4o-mini",
+        name = "openai/gpt-4o-mini",
         temperature = 0.2
     },
     tool_choice = "required",
@@ -188,4 +187,3 @@ Feature: Meeting recap with HITL gates
     And the send_email tool should be called
     And the output sent should be True
 ]])
-

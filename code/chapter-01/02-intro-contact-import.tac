@@ -9,8 +9,7 @@
 -- }
 --
 -- importer = Agent {
---     provider = "openai",
---     model = "gpt-4o-mini",
+--     model = "openai/gpt-4o-mini",
 --     system_prompt = [[
 -- You will be given one contact record as raw text.
 -- It might be a 1-row CSV (with header), a JSON object, or an email header.
@@ -65,8 +64,7 @@ file_contact = Tool {
 }
 
 importer = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
+    model = "openai/gpt-4o-mini",
     system_prompt = [[
 You will be given one contact record as raw text.
 It might be a 1-row CSV (with header), a JSON object, or an email header.

@@ -14,9 +14,8 @@ finalize_recap = Tool {
 }
 
 recapper = Agent {
-    provider = "openai",
     model = {
-        name = "gpt-4o-mini",
+        name = "openai/gpt-4o-mini",
         temperature = 0.2
     },
     tool_choice = "required",
@@ -100,4 +99,3 @@ Feature: Meeting recap with structured output
     And the output body should exist
     And the output action_items should exist
 ]])
-

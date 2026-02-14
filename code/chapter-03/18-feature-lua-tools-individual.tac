@@ -67,8 +67,7 @@ end
 
 -- Agent with access to individual Lua tools
 calculator = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
+    model = "openai/gpt-4o-mini",
     tool_choice = "required",
     system_prompt = [[You are a helpful calculator assistant.
 

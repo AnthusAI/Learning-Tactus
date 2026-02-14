@@ -63,8 +63,7 @@ Mocks {
 
 -- Agents that use mocked tools
 weather_agent = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
+    model = "openai/gpt-4o-mini",
     system_prompt = [[You are an information gathering assistant.
 
 You have access to these tools:
@@ -76,8 +75,7 @@ When asked for information, use the appropriate tools and then call done with a 
 }
 
 stock_agent = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
+    model = "openai/gpt-4o-mini",
     system_prompt = [[You are an information gathering assistant.
 
 You have access to these tools:

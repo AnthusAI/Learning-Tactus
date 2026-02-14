@@ -1,13 +1,7 @@
 -- State Management Example
 -- Demonstrates setting, getting, and incrementing state values
 
--- Agents (defined at top level - reusable across procedures)
-worker = Agent {
-    provider = "openai",
-    system_prompt = "A simple worker agent",
-    initial_message = "Starting state management example",
-    tools = {},
-}
+-- No agents are needed for this example.
 
 -- Procedure with outputs defined inline
 Procedure {

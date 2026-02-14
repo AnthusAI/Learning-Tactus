@@ -15,8 +15,7 @@ Mocks {
 local done = require("tactus.tools.done")
 
 greeter = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
+    model = "openai/gpt-4o-mini",
     tool_choice = "required",
     system_prompt = [[You are a friendly assistant. When asked to greet someone, provide a warm, friendly greeting.
 

@@ -42,9 +42,8 @@ send_email = Tool {
 }
 
 recapper = Agent {
-    provider = "openai",
     model = {
-        name = "gpt-4o-mini",
+        name = "openai/gpt-4o-mini",
         temperature = 0.2
     },
     tool_choice = "required",
