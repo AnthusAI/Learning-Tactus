@@ -31,6 +31,7 @@ book:
         - chapters/06-your-first-agent.qmd
         - chapters/05-procedures-and-outputs.qmd
         - chapters/07-tools.qmd
+        - chapters/07a-models.qmd
         - chapters/08-state-management.qmd
         - chapters/09-the-agent-loop.qmd
         - chapters/10-human-in-the-loop.qmd

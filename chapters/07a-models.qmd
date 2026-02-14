@@ -1,0 +1,82 @@
+# Predictable Inference with Models
+
+Agents are great when you want a conversation: multi-turn reasoning, tool use, and flexible behavior.
+
+But sometimes you want something else:
+
+- A single, schema-defined input
+- A single, schema-defined output
+- No tool calls
+- A deterministic, testable control-flow story in *your* code
+
+That is what the **Model primitive** is for.
+
+## Model vs Agent (Quick Rule of Thumb)
+
+Use an **Agent** when you want a conversational loop (LLM turns, tools, planning).
+
+Use a **Model** when you want *inference* (classification, extraction, scoring) that plugs into your procedure like a function call.
+
+In practice, a great pattern is:
+
+1) Use a Model to make a fast, predictable decision (or score).
+2) Use an Agent only for the harder cases (low confidence, missing info, complex reasoning).
+
+## A Trainable (and Mockable) Model Example
+
+This example is deliberately simple: a sentiment classifier (IMDB) that drives a small piece of business logic:
+
+- confident positive => `decision = "yes"`
+- confident negative => `decision = "no"`
+- low confidence => `decision = "review"`
+
+The important part is the *testing story*:
+
+- In CI (and when learning), we run in **mock** mode for deterministic behavior.
+- When you want to see the real thing, you **train** the model and run against the **registry**.
+
+```lua {file="code/chapter-07a/10-model-naive-bayes-imdb.tac" show-path="true"}
+```
+
+## Run It (Mock Mode)
+
+Mock mode never calls external services. It uses the `Mocks { ... }` block in the same file.
+
+```bash
+tactus test code/chapter-07a/10-model-naive-bayes-imdb.tac --mock
+```
+
+You should see all three scenarios pass.
+
+## Train It (Real Model)
+
+Training requires extra dependencies (datasets + scikit-learn). Install:
+
+```bash
+pip install "tactus[ml]"
+```
+
+Then train the model declared in the file:
+
+```bash
+tactus train code/chapter-07a/10-model-naive-bayes-imdb.tac --model imdb_nb
+```
+
+Training writes a versioned artifact to the registry under the model's `name` (here: `imdb_nb`). Runtime reads from the registry when you call `Model("imdb_nb")`.
+
+After training, run the real (non-mocked) test:
+
+```bash
+tactus test code/chapter-07a/10-model-naive-bayes-imdb.tac
+```
+
+## Evaluate It (Optional)
+
+If you want metrics (accuracy/precision/recall/F1) on the test split declared in `Model.training.data`:
+
+```bash
+tactus models evaluate code/chapter-07a/10-model-naive-bayes-imdb.tac --model imdb_nb
+```
+
+This does not re-train; it evaluates a registry-backed model version against the declared test data.
+
