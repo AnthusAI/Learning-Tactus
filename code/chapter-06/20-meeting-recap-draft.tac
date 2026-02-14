@@ -61,8 +61,8 @@ Procedure {
         local message = "Recipient: " .. input.recipient_name .. "\n\nNotes:\n" .. input.raw_notes
         local result = recapper({message = message})
 
-        if result and result.message and result.message ~= "" then
-            return {draft = result.message}
+        if result and result.output and result.output ~= "" then
+            return {draft = result.output}
         end
 
         return {draft = "No draft produced"}

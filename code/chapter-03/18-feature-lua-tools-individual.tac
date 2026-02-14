@@ -116,7 +116,7 @@ Procedure {
         local call = done.last_call()
         answer = (call and call.args and call.args.reason) or "Task completed"
     else
-        answer = result.message or ""
+        answer = (result and result.output) or ""
     end
 
     return {

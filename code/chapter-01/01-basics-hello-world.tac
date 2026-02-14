@@ -13,8 +13,7 @@ Mocks {
 
 -- snippet:start hello-world-program
 World = Agent {
-    provider = "openai",
-    model = "gpt-4o-mini",
+    model = "openai/gpt-4o-mini",
     system_prompt = "Your name is World."
 }
 
@@ -24,7 +23,7 @@ Procedure {
     },
     function(input)
         local result = World({message = "Hello, World!"})
-        local message = (result and (result.message or result.response)) or ""
+        local message = (result and result.output) or ""
         return {message = message}
     end
 }
