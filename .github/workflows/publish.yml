@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      build_pdf:
+        description: "Build PDF output (slow; requires LaTeX)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -12,7 +18,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -23,12 +29,14 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
-          tinytex: true
+          # TinyTeX is only needed for PDF builds, and it can be slow/flaky on CI.
+          tinytex: ${{ github.event_name == 'workflow_dispatch' && inputs.build_pdf }}
 
       - name: Render book
         run: quarto render --to html
 
       - name: Ensure LaTeX packages (PDF)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_pdf }}
         run: |
           set -euo pipefail
           if command -v tlmgr >/dev/null 2>&1; then
@@ -36,6 +44,7 @@ jobs:
           fi
 
       - name: Render PDF
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_pdf }}
         run: ./scripts/render-pdf.sh
 
       - name: Upload artifact
