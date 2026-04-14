@@ -27,6 +27,35 @@ In Tactus, an agent is a configured LLM “worker”:
 
 An agent is not your control flow. You still write the loop, the branching, the checks, and the safety gates in deterministic Lua code. That split is the whole point: **use intelligence where it helps, use code where it must be correct**.
 
+## Agent-level retry (built-in)
+
+Sometimes an agent turn fails for reasons that have nothing to do with your workflow logic:
+
+- transient provider errors / timeouts
+- output validation failures (the model returned the wrong shape)
+
+Tactus supports **agent-level retry** directly in the agent declaration:
+
+```lua
+recapper = Agent {
+  name = "recapper",
+  provider = "openai",
+  model = "gpt-4o-mini",
+  system_prompt = "...",
+  retry = {
+    enabled = true,
+    attempts = 3,                 -- total attempts (first try + retries)
+    delay_seconds = 0.5,
+    backoff = "exponential",      -- "constant" | "exponential"
+    on = "infra_plus_validation", -- default: retry infra + validation failures
+  },
+}
+```
+
+This retries a **single agent turn** and rolls the agent’s message history back to the start of that turn on each retry.
+
+This is different from a **procedure loop**. Agent retry says, “try the same turn again.” A procedure loop says, “we learned something, now take the next workflow step.”
+
 ## A Minimal Drafting Agent
 
 The example file for this chapter is `code/chapter-06/20-meeting-recap-draft.tac`. It:

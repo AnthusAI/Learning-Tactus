@@ -39,6 +39,51 @@ In Lua, that usually looks like:
 ```lua {file="code/chapter-09/00-loop-shapes.tac" snippet="safe-loop-shape" show-path="true"}
 ```
 
+## Agent-level retry (built-in)
+
+There’s another kind of retry that’s worth separating from your procedure loop: **retrying a single agent turn**.
+
+Use agent-level retry for:
+
+- transient provider / transport failures
+- structured output validation failures (wrong shape, missing required fields)
+
+Configure it directly on the agent:
+
+```lua
+worker = Agent {
+  name = "worker",
+  model = "openai/gpt-4o-mini",
+  system_prompt = "...",
+  retry = {
+    enabled = true,
+    attempts = 3,
+    delay_seconds = 0.5,
+    backoff = "exponential",
+    on = "infra_plus_validation",
+  },
+}
+```
+
+This retry policy is **bounded** (`attempts`) and **local** to that call site: it retries the agent’s turn and rolls back the agent’s message history to the start of the attempted turn on each retry.
+
+## Three Retry Layers
+
+By this point, Tactus gives you three different places where "retry" can happen:
+
+1. **Standard-library retries**
+   Helpers like classification/extraction may expose `max_retries` because they own a tight prompt + validation loop internally.
+2. **Agent-level retries**
+   `retry = { ... }` on `Agent { ... }` retries one agent turn when the provider fails or the structured output is invalid.
+3. **Procedure-level loops**
+   Your Lua code decides the workflow needs another step because a check failed, a human rejected the draft, or more information is needed.
+
+The distinction matters:
+
+- Use **stdlib retry** when a helper already owns the micro-loop.
+- Use **Agent retry** when the same call should simply be tried again.
+- Use a **procedure loop** when the workflow needs **new information, new feedback, or a different next action**.
+
 ## Make Replays Legible With Logs
 
 Durable execution is only useful if you can understand what happened. Log the *shape* of your loop:
