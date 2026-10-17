@@ -163,3 +163,7 @@ Ryan Porter
 ## Publisher
 
 Anthus AI Solutions
+
+## License
+
+Everything in this repository, writing and code alike, is licensed under the [MIT License](LICENSE).
